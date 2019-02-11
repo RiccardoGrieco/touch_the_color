@@ -5,7 +5,7 @@ import rospy
 class Witch:
     def __init__(self):
         rospy.init_node("witch", anonymous=True)
-
+        
     def listen(self, msg):
         #PS
         #TODO listen behaviour
