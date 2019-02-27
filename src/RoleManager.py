@@ -94,6 +94,7 @@ class RoleManager:
         """
         Create and start socket connection.
         :param witchIPAddress: ip address of robot that will be the witch in the next game
+        :return False if connection doesn't succeed, True otherwise.
         """
 
         self.host = self.witchIPAddress
@@ -114,14 +115,21 @@ class RoleManager:
                 self.myThread.append(threading.Thread(target=self.manageConnectionWithKid,
                                                       args=(conn, address)).start())
                 # TODO togliere
-                print("connected to client")
+                print("Connected to client")
         else:
-            self.sock.connect((self.host, self.port))
+
+            try:
+                self.sock.connect((self.host, self.port))
+            except:
+                return False
+
             self.sock.setblocking(0)
             self.myThread.append(threading.Thread(target=self.manageConnectionWithWitch,
                                                   args=self.witchIPAddress).start())
             # TODO togliere
-            print("connected to server")
+            print("Connected to server")
+
+        return True
 
     def manageConnectionWithWitch(self, witchIPAddress):
         """
@@ -132,7 +140,6 @@ class RoleManager:
         """
 
         size = 1024
-        noAttempts = 0
 
         while not self.stopThreads:
             try:
@@ -149,11 +156,7 @@ class RoleManager:
                         print('Server disconnected')
                         break
             except:
-                noAttempts += noAttempts + 1
-                if noAttempts < 5:
-                    continue
-                else:
-                    break
+                break
         self.sock.shutdown()
         self.sock.close()
 
@@ -303,6 +306,8 @@ class RoleManager:
         Configure topic handlers, prepare and start the launch node and call createAndStartConnection.
         """
 
+        connected = False
+
         # TODO togliere
         print("IP LIST: ", self.ipList)
         print("MY IP:", self.myIPAddress)
@@ -321,7 +326,8 @@ class RoleManager:
         if self.role:                   # if I am a Witch
             self.ownNodeSpeaker(1, "")  # send to my Witch the number of players
 
-        self.createAndStartConnection()
+        while not connected:
+            connected = self.createAndStartConnection()
 
     def resetParameters(self, witchIp):
         """
