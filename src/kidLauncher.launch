@@ -1,5 +1,5 @@
 <launch>
 
-	<node pkg="touch_the_color" type="Kid.py" name="Kid" />
+	<node pkg="touch_the_color" type="Kid.py" name="Kid" output="screen" />
 
 </launch>

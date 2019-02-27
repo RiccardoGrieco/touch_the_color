@@ -132,6 +132,7 @@ class RoleManager:
         """
 
         size = 1024
+        noAttempts = 0
 
         while not self.stopThreads:
             try:
@@ -146,9 +147,15 @@ class RoleManager:
                         self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
                     else:
                         print('Server disconnected')
+                        break
             except:
-                self.sock.close()
-                return False
+                noAttempts += noAttempts + 1
+                if noAttempts < 5:
+                    continue
+                else:
+                    break
+        self.sock.shutdown()
+        self.sock.close()
 
     def manageConnectionWithKid(self, conn, address):
         """
@@ -174,9 +181,13 @@ class RoleManager:
                         self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
                     else:
                         print('Client disconnected')
+                        break
             except:
-                conn.close()
-                return False
+                break
+
+        conn.shutdown()
+        conn.close()
+
 
     def manageColorMsg(self, args):
         """
