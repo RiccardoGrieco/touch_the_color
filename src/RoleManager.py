@@ -22,7 +22,7 @@ class RoleManager:
         """
 
         rospy.init_node("role_manager", anonymous=True)
-        self.myIPAddress = socket.gethostbyname(socket.gethostname())
+        self.myIPAddress = rospy.get_param("/myIPAddress")
         self.ipList = rospy.get_param("/ipList")                        # list of ip (me included)
         self.nodeListenerSub = rospy.Subscriber("node_to_rolemanager", String, self.ownNodeListener)
         self.nodeSpeakerPub = rospy.Publisher("rolemanager_to_node", String, queue_size=10)
@@ -117,6 +117,8 @@ class RoleManager:
             self.sock.setblocking(0)
             self.myThread.append(threading.Thread(target=self.manageConnectionWithWitch,
                                                   args=self.witchIPAddress).start())
+            # TODO togliere
+            print("connected to server")
 
     def manageConnectionWithWitch(self, witchIPAddress):
         """
@@ -264,9 +266,9 @@ class RoleManager:
         path = roslib.packages.get_pkg_dir("touch_the_color")
 
         if iAmWitch:
-            path += "/witchLauncher.launch"
+            path += "/src/witchLauncher.launch"
         else:
-            path += "/kidLauncher.launch"
+            path += "/src/kidLauncher.launch"
 
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         roslaunch.configure_logging(uuid)
@@ -286,6 +288,11 @@ class RoleManager:
         """
         Configure topic handlers, prepare and start the launch node and call createAndStartConnection.
         """
+
+        # TODO togliere
+        print("IP LIST: ", self.ipList)
+        print("MY IP:", self.myIPAddress)
+
         if self.myIPAddress == self.witchIPAddress:
             self.role = True
             self.topicHandlers = self.WITCH_COLOR_HANDLERS
