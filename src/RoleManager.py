@@ -1,31 +1,326 @@
 #!/usr/bin/env python
 
+
 import rospy
+import socket
+import threading
+import roslaunch
+from std_msgs.msg import String
+
 
 class RoleManager:
+
+    PORT = 65535
+
     def __init__(self):
-		rospy.init_node("role_manager", anonymous=True)
-        #playersDictionary (name->ip)
-        #myName
-        #TODO first witch
-        #TODO topic /role
-        #TODO create communication node
-        
+        """
+        The rosparam ipList MUST be setted as list of strings ("['127.0.0.1', '127.0.1.1']".
+        In ipList there's also my ip address.
+        """
+
+        rospy.init_node("role_manager", anonymous=True)
+        self.myIPAddress = socket.gethostbyname(socket.gethostname())
+        self.ipList = rospy.get_param("/ipList")                        # list of ip (me included)
+        self.nodeListenerSub = rospy.Subscriber("node_to_rolemanager", String, self.ownNodeListener)
+        self.nodeSpeakerPub = rospy.Publisher("rolemanager_to_node", String, queue_size=10)
+
+        self.role = False                       # role = True for Witch, role = False for Kid
+        self.witchIPAddress = min(self.ipList)  # the first witch
+
+        self.host = None
+        self.port = self.PORT
+        self.sock = None
+        self.launch = None
+        self.myThread = []
+        self.conn = []      # list of socket objects
+        self.address = []   # list of other players' ip addresses
+        self.topicHandlers = []
+        self.winnersIPAddress = []
+
+        # handlers to methods that manages sockets sends
+        self.WITCH_COLOR_HANDLERS = [self.tellColorBySocket, self.tellEndGameBySocket]
+        self.KID_COLOR_HANDLERS = [self.tellColorTouchedBySocket]
+
+        # handlers to methods that manages the received socket messages
+        self.handlers = [self.manageColorMsg,
+                         self.manageColorTouchedMsg,
+                         self.manageEndGameMsg]
+
+        self.config()
+
+        rospy.spin()        # in loop until is killed
+
+    def tellColorBySocket(self, color):
+        """
+        Only Witch call this method.
+        Send to Kids' RM the chosen color.
+        :param color: the chosen color
+        """
+
+        msg = "0:" + color
+
+        for c in self.conn:
+            c.send(msg)
+
+    def tellEndGameBySocket(self):
+        """
+        Only Witche call this method.
+        Send to Kid's RM the end of the game and loser's IP address.
+        """
+
+        nextWitchIP = [ip for ip in self.ipList if ip not in self.winnersIPAddress]
+        msg = "2:" + nextWitchIP
+
+        for c in self.conn:
+            c.send(msg)
+
+    def tellColorTouchedBySocket(self):
+        """
+        Only Kid call this method.
+        Send to Witch's RM that the color has been touched.
+        """
+        msg = "1:" + self.myIPAddress
+
+        self.sock.sendall(msg)
+
+    def createAndStartConnection(self, witchIPAddress):
+        """
+        Create and start socket connection.
+        :param witchIPAddress: ip address of robot that will be the witch in the next game
+        """
+
+        self.host = witchIPAddress
+
+        if self.myIPAddress == witchIPAddress:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) I don't know what it do
+            self.sock.bind((self.host, self.port))
+
+            del self.conn[:]
+            del self.address[:]
+            del self.myThread[:]
+
+            for i in range(1, len(self.ipList)):
+                conn, address = self.sock.accept()
+                self.conn.append(conn)
+                self.address.append(address)
+                self.myThread.append(threading.Thread(target=self.manageConnectionWithKid,
+                                                      args=(conn, address)).start())
+        else:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.connect((self.host, self.port))
+            self.myThread.append(threading.Thread(target=self.manageConnectionWithWitch,
+                                                  args=witchIPAddress).start())
+
+    def manageConnectionWithWitch(self, witchIPAddress):
+        """
+        Only Kids call this method.
+
+        :param witchIPAddress:
+        :return: False is something in the connection go wrong.
+        """
+
+        size = 1024
+        while True:
+            try:
+                data = self.sock.recv(size)
+                if data:
+                    params = data.split(":")                    # param[0]=type of msg; param[1]=msg
+
+                    self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
+                else:
+                    print('Server disconnected')
+            except:
+                self.sock.close()
+                return False
+
+    def manageConnectionWithKid(self, conn, address):
+        """
+        Only Witches call this method.
+
+        :param conn: new socket object that could be used to send/receive messages on the connection
+        :param address: the address bound to the socket
+        :return: False is something in the connection go wrong.
+        """
+
+        size = 1024
+
+        while True:
+            try:
+                data = conn.recv(size)
+                if data:
+                    params = data.split(":")                    # param[0]=type of msg; param[1]=msg
+
+                    self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
+                else:
+                    print('Client disconnected')
+            except:
+                conn.close()
+                return False
+
+    def manageColorMsg(self, args):
+        """
+        Only Kid call this method.
+        Write on topic the color to touch.
+        :param args: args[0]=color name (uppercase).
+        """
+
+        color = args[0]
+        self.ownNodeSpeaker(0, color)
+
+    def manageColorTouchedMsg(self, args):
+        """
+        Only Witch call this method.
+        TODO: decidere se gestire il messaggio direttamente qui o riferire tutto al nodo Witch e poi vedere che fare
+        :param args: args[0]=Kid's - who touched the color - IP address.
+        """
+
+        ipWinner = args[0]
+        self.winnersIPAddress.append(ipWinner)  # add this winner to winners list
+
+        self.ownNodeSpeaker(0, "")      # write on topic that another Kid wins
+
+
+    def manageEndGameMsg(self, args):
+        """
+        Only Kid call this method.
+        Based on whether I'm the loser or not, kill the actual node and launch the next one.
+        :param args: args[0]=loser's name (IP address).
+        """
+
+        ipLoser = args[0]
+        self.launch.shutdown()
+
+        if self.myIPAddress == ipLoser:
+            # TODO altre cose da definire BENE per il prossimo game!
+            self.resetParameters(True)
+            # self.prepareLaunchNode(True)
+        else:
+            # TODO altre cose da definire BENE per il prossimo game!
+            self.resetParameters(False)
+            # self.prepareLaunchNode(False)
+
+    def ownNodeSpeaker(self, typeOfMess, color):
+        # manage messages TO Kid/Witch nodes writing on its publisher
+
+        # Witch:
+        # 0 (a "color touched" socket is arrived)
+        # 1 (the number of total players)
+        # Kid:
+        # 0 (the socket which contains the color arrived)
+        # 1 (the "go!" socket arrived)
+
+        if self.role:   # I am a Witch
+            if typeOfMess == 0:
+                self.nodeSpeakerPub.publish("0")                            # another robot touched the color
+            elif typeOfMess == 1:
+                self.nodeSpeakerPub.publish("1:" + len(self.ipList) - 1)    # number of Kids
+
+        else:           # I am a Kid
+            if typeOfMess == 0:
+                self.nodeSpeakerPub.publish("0:" + color)   # color received
+            elif typeOfMess == 1:
+                self.nodeSpeakerPub.publish("1")            # "go!" received
+
+
+    def ownNodeListener(self, msg):
+        # manage messages FROM Kid/Witch nodes reading from its subscriber
+
+        # Witch
+        # 0:colore (il colore che la mia Witch ha scelto, da inviare a tutti i RoleManager dei Kid)
+        # 1 (ho ricevuto tutti i messaggi  necessari alla fine del gioco) senza info
+        # Kid
+        # 0 (colore trovato) senza info
+
+        if self.role:   # I am a Witch
+            if msg[0] == "0":
+                color = msg[2:]
+
+                self.topicHandlers[0](color)    # call tellColorBySocket(color)
+
+            elif msg[0] == "1":
+                # game over: n-1 messages received
+
+                winnerIP = msg[1:]
+                self.handlers[1](winnerIP)      # call manageColorTouchedMsg(winnerIP)
+
+        else:           # I am a Kid
+            if msg[0] == "0":
+
+                self.sock.sendall("1:" + self.myIPAddress)  # send a "color touched msg" to the Witch
+
+    def prepareLaunchNode(self, iAmWitch):
+        """
+        Choose and configure the Witch/Kid node that will be launched.
+        :param iAmWitch: True if I am the witch of the next game, False otherwise
+        :return: the launcher object refers to the Witch/Kid node to launch
+        """
+
+        if iAmWitch:
+            path = "/home/marco/catkin_ws/src/touch_the_color/src/witchLauncher.launch"
+        else:
+            path = "/home/marco/catkin_ws/src/touch_the_color/src/kidLauncher.launch"
+
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch.configure_logging(uuid)
+        launch = roslaunch.parent.ROSLaunchParent(uuid, [path])
+        return launch
+
+    def startNode(self):
+        """
+        Start the node referred to self.launch.
+        ... it seams there's no way to control the launcher status
+        """
+
+        self.launch.start()
+        rospy.loginfo("started")
+
+    def config(self):
+        """
+        Configure topic handlers, prepare and start the launch node and call createAndStartConnection.
+        """
+        if self.myIPAddress == self.witchIPAddress:
+            self.role = True
+            self.topicHandlers = self.WITCH_COLOR_HANDLERS
+        else:
+            self.role = False
+            self.topicHandlers = self.KID_COLOR_HANDLERS
+
+        # based on its role, launch Witch or Kid node
+        self.launch = self.prepareLaunchNode(self.role)
+        self.startNode()
+
+        if self.role:
+            self.ownNodeSpeaker(1, "")  # send to my Witch the number of players
+
+        self.createAndStartConnection(self.witchIPAddress)
+
+    def resetParameters(self, iAmNextWitch):
+        """
+        Reset all parameters for the next game. At the end, call config.
+        """
+
+        self.host = None
+        self.sock = None
+        self.launch = None
+        self.role = None
+        del self.myThread[:]
+        del self.conn[:]
+        del self.address[:]
+        del self.topicHandlers[:]
+        del self.winnersIPAddress[:]
+
+        if iAmNextWitch:
+            self.witchIPAddress = self.myIPAddress
+        else:
+            self.witchIPAddress = None
+
+        self.config()
+
     def endGame(self, msg):
-        #TODO switch or re-initialize Role
-        #TODO config communication node
+        # ?
+        i = 0
 
 
-    class Communication:
-        #lets role nodes communicate with each other 
-
-        def read(self, msg):
-            #TODO
-
-        def send(self, msg):
-            #TODO
-
-        def config(self, ...): #TODO params
-            #TODO configure sockets
-
-    
+if __name__ == "__main__":
+    rm = RoleManager()
