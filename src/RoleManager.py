@@ -98,11 +98,13 @@ class RoleManager:
 
         self.host = self.witchIPAddress
         self.stopThreads = False
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         if self.myIPAddress == self.witchIPAddress:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
             # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) I don't know what it do
             self.sock.bind((self.host, self.port))
+            self.sock.listen(len(self.ipList) - 1)
 
             for i in range(1, len(self.ipList)):
                 conn, address = self.sock.accept()
@@ -111,8 +113,9 @@ class RoleManager:
                 self.address.append(address)
                 self.myThread.append(threading.Thread(target=self.manageConnectionWithKid,
                                                       args=(conn, address)).start())
+                # TODO togliere
+                print("connected to client")
         else:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.host, self.port))
             self.sock.setblocking(0)
             self.myThread.append(threading.Thread(target=self.manageConnectionWithWitch,
@@ -224,7 +227,7 @@ class RoleManager:
             if typeOfMess == 0:
                 self.nodeSpeakerPub.publish("0")                            # another robot touched the color
             elif typeOfMess == 1:
-                self.nodeSpeakerPub.publish("1:" + len(self.ipList) - 1)    # number of Kids
+                self.nodeSpeakerPub.publish("1:" + str(len(self.ipList) - 1))    # number of Kids
 
         else:           # I am a Kid
             if typeOfMess == 0:

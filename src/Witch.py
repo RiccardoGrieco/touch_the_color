@@ -2,7 +2,8 @@
 
 import rospy
 from random import randint
-from util import Colors
+from util.Colors import Colors
+from std_msgs.msg import String
 
 
 class Witch:
