@@ -90,10 +90,8 @@ class Kid:
 
         if msg[0] == "0":
             self.colorToTouch = msg[2:]
-
-        elif msg[0] == "1":
-            i = 0
             self.gameStarted = True
+
 
     def ownRoleManagerSpeaker(self, typeOfMess):
         # manage messages TO RoleManager writing on its publisher
@@ -107,7 +105,11 @@ class Kid:
         rate_start = rospy.Rate(1)
         rate_start.sleep()
 
-        while(not(rospy.is_shutdown())):
+        # wait until the game starts
+        while not robot.gameStarted:
+            time.sleep(0.5)
+
+        while not rospy.is_shutdown():
             self.canRead = False
             fieldVector = self.wander()
             if self.POIFound or time.time()-self.lastPOIFound<self.MAX_TIME_ELAPSED:
@@ -252,9 +254,11 @@ class Kid:
     def attract(self, d):
         return self.ATTRACTION_SLOPE*d+(1.0-self.ATTRACTION_SLOPE*self.SAFETY_DISTANCE)
 
+
 if __name__ == "__main__":
     try:
         robot = Kid()
+
         robot.start()
     except rospy.ROSInterruptException:
         print("ROSInterruptException")

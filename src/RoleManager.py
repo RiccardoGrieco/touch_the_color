@@ -5,12 +5,15 @@ import rospy
 import socket
 import threading
 import roslaunch
+import roslib
+import select
 from std_msgs.msg import String
 
 
 class RoleManager:
 
     PORT = 65535
+    RECEIVE_SOCKET_TIMEOUT = 3
 
     def __init__(self):
         """
@@ -36,6 +39,7 @@ class RoleManager:
         self.address = []   # list of other players' ip addresses
         self.topicHandlers = []
         self.winnersIPAddress = []
+        self.stopThreads = False
 
         # handlers to methods that manages sockets sends
         self.WITCH_COLOR_HANDLERS = [self.tellColorBySocket, self.tellEndGameBySocket]
@@ -68,11 +72,14 @@ class RoleManager:
         Send to Kid's RM the end of the game and loser's IP address.
         """
 
+        self.winnersIPAddress.append(self.myIPAddress)
         nextWitchIP = [ip for ip in self.ipList if ip not in self.winnersIPAddress]
         msg = "2:" + nextWitchIP
 
         for c in self.conn:
             c.send(msg)
+
+        self.manageEndGameMsg([nextWitchIP])
 
     def tellColorTouchedBySocket(self):
         """
@@ -83,25 +90,23 @@ class RoleManager:
 
         self.sock.sendall(msg)
 
-    def createAndStartConnection(self, witchIPAddress):
+    def createAndStartConnection(self):
         """
         Create and start socket connection.
         :param witchIPAddress: ip address of robot that will be the witch in the next game
         """
 
-        self.host = witchIPAddress
+        self.host = self.witchIPAddress
+        self.stopThreads = False
 
-        if self.myIPAddress == witchIPAddress:
+        if self.myIPAddress == self.witchIPAddress:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) I don't know what it do
             self.sock.bind((self.host, self.port))
 
-            del self.conn[:]
-            del self.address[:]
-            del self.myThread[:]
-
             for i in range(1, len(self.ipList)):
                 conn, address = self.sock.accept()
+                conn.setblocking(0)
                 self.conn.append(conn)
                 self.address.append(address)
                 self.myThread.append(threading.Thread(target=self.manageConnectionWithKid,
@@ -109,8 +114,9 @@ class RoleManager:
         else:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.host, self.port))
+            self.sock.setblocking(0)
             self.myThread.append(threading.Thread(target=self.manageConnectionWithWitch,
-                                                  args=witchIPAddress).start())
+                                                  args=self.witchIPAddress).start())
 
     def manageConnectionWithWitch(self, witchIPAddress):
         """
@@ -121,15 +127,20 @@ class RoleManager:
         """
 
         size = 1024
-        while True:
-            try:
-                data = self.sock.recv(size)
-                if data:
-                    params = data.split(":")                    # param[0]=type of msg; param[1]=msg
 
-                    self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
-                else:
-                    print('Server disconnected')
+        while not self.stopThreads:
+            try:
+                ready = select.select([self.sock], [], [], self.RECEIVE_SOCKET_TIMEOUT)
+
+                if ready[0]:
+                    data = self.sock.recv(size)
+
+                    if data:
+                        params = data.split(":")                    # param[0]=type of msg; param[1]=msg
+
+                        self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
+                    else:
+                        print('Server disconnected')
             except:
                 self.sock.close()
                 return False
@@ -145,15 +156,19 @@ class RoleManager:
 
         size = 1024
 
-        while True:
+        while not self.stopThreads:
             try:
-                data = conn.recv(size)
-                if data:
-                    params = data.split(":")                    # param[0]=type of msg; param[1]=msg
+                ready = select.select([conn], [], [], self.RECEIVE_SOCKET_TIMEOUT)
 
-                    self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
-                else:
-                    print('Client disconnected')
+                if ready[0]:
+                    data = conn.recv(size)
+
+                    if data:
+                        params = data.split(":")                    # param[0]=type of msg; param[1]=msg
+
+                        self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
+                    else:
+                        print('Client disconnected')
             except:
                 conn.close()
                 return False
@@ -183,22 +198,15 @@ class RoleManager:
 
     def manageEndGameMsg(self, args):
         """
-        Only Kid call this method.
         Based on whether I'm the loser or not, kill the actual node and launch the next one.
         :param args: args[0]=loser's name (IP address).
         """
 
         ipLoser = args[0]
-        self.launch.shutdown()
+        self.launch.shutdown()  # TODO posso verificare che termina?
 
-        if self.myIPAddress == ipLoser:
-            # TODO altre cose da definire BENE per il prossimo game!
-            self.resetParameters(True)
-            # self.prepareLaunchNode(True)
-        else:
-            # TODO altre cose da definire BENE per il prossimo game!
-            self.resetParameters(False)
-            # self.prepareLaunchNode(False)
+        self.resetParameters(ipLoser)
+
 
     def ownNodeSpeaker(self, typeOfMess, color):
         # manage messages TO Kid/Witch nodes writing on its publisher
@@ -219,8 +227,6 @@ class RoleManager:
         else:           # I am a Kid
             if typeOfMess == 0:
                 self.nodeSpeakerPub.publish("0:" + color)   # color received
-            elif typeOfMess == 1:
-                self.nodeSpeakerPub.publish("1")            # "go!" received
 
 
     def ownNodeListener(self, msg):
@@ -241,8 +247,7 @@ class RoleManager:
             elif msg[0] == "1":
                 # game over: n-1 messages received
 
-                winnerIP = msg[1:]
-                self.handlers[1](winnerIP)      # call manageColorTouchedMsg(winnerIP)
+                self.topicHandlers[1]()      # tellEndGameBySocket()
 
         else:           # I am a Kid
             if msg[0] == "0":
@@ -256,10 +261,12 @@ class RoleManager:
         :return: the launcher object refers to the Witch/Kid node to launch
         """
 
+        path = roslib.packages.get_pkg_dir("touch_the_color")
+
         if iAmWitch:
-            path = "/home/marco/catkin_ws/src/touch_the_color/src/witchLauncher.launch"
+            path += "/witchLauncher.launch"
         else:
-            path = "/home/marco/catkin_ws/src/touch_the_color/src/kidLauncher.launch"
+            path += "/kidLauncher.launch"
 
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         roslaunch.configure_logging(uuid)
@@ -290,15 +297,19 @@ class RoleManager:
         self.launch = self.prepareLaunchNode(self.role)
         self.startNode()
 
-        if self.role:
+        if self.role:                   # if I am a Witch
             self.ownNodeSpeaker(1, "")  # send to my Witch the number of players
 
-        self.createAndStartConnection(self.witchIPAddress)
+        self.createAndStartConnection()
 
-    def resetParameters(self, iAmNextWitch):
+    def resetParameters(self, witchIp):
         """
         Reset all parameters for the next game. At the end, call config.
         """
+
+        self.stopThreads = True
+        for t in self.myThread:
+            t.join()
 
         self.host = None
         self.sock = None
@@ -310,10 +321,7 @@ class RoleManager:
         del self.topicHandlers[:]
         del self.winnersIPAddress[:]
 
-        if iAmNextWitch:
-            self.witchIPAddress = self.myIPAddress
-        else:
-            self.witchIPAddress = None
+        self.winnersIPAddress = witchIp
 
         self.config()
 
