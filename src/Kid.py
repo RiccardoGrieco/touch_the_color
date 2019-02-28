@@ -92,6 +92,11 @@ class Kid:
 
         if msg[0] == "0":
             self.colorToTouch = msg[2:]
+
+            #TODO remove
+            self.ownRoleManagerSpeaker(0)
+            return
+
             self.gameStarted = True
 
 
