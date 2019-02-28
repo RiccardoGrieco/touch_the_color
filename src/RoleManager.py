@@ -52,6 +52,8 @@ class RoleManager:
                          self.manageColorTouchedMsg,
                          self.manageEndGameMsg]
 
+        print("len ipList = " + str(len(self.ipList)))
+
         self.config()
 
         rospy.spin()        # in loop until is killed
@@ -66,28 +68,29 @@ class RoleManager:
         print("in tellColorBySocket")
         msg = "0:" + color
         noPartecipants = len(self.ipList)-1
-        while self.noConnected<noPartecipants:
+        while self.noConnected < noPartecipants:
             time.sleep(0.1)
-            print("noConnected: " + str(self.noConnected))
+            # print("noConnected: " + str(self.noConnected))
 
         for c in self.conn:
             c.send(msg)
-        print("esco da tellColor....")
+        print("esco da tellColorBySocket")
 
     def tellEndGameBySocket(self):
         """
-        Only Witche call this method.
+        Only Witch call this method.
         Send to Kid's RM the end of the game and loser's IP address.
         """
 
         self.winnersIPAddress.append(self.myIPAddress)
+        # rescue ip in ipList but not in winnersIPAddress
         nextWitchIP = [ip for ip in self.ipList if ip not in self.winnersIPAddress]
-        msg = "2:" + nextWitchIP
+        msg = "2:" + str(nextWitchIP[0])
 
         for c in self.conn:
             c.send(msg)
 
-        self.manageEndGameMsg([nextWitchIP])
+        self.manageEndGameMsg([nextWitchIP[0]])
 
     def tellColorTouchedBySocket(self):
         """
@@ -107,6 +110,10 @@ class RoleManager:
 
         self.host = self.witchIPAddress
         self.stopThreads = False
+
+        if self.sock is not None:
+            self.sock.close()
+
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         if self.myIPAddress == self.witchIPAddress:
@@ -119,8 +126,9 @@ class RoleManager:
                 conn.setblocking(0)
                 self.conn.append(conn)
                 self.address.append(address)
-                self.myThread.append(threading.Thread(target=self.manageConnectionWithKid,
-                                                      args=(conn, address)).start())
+                thread = threading.Thread(target=self.manageConnectionWithKid, args=(conn, address))
+                self.myThread.append(thread)
+                thread.start()
                 self.noConnected = self.noConnected+1
                 # TODO togliere
                 print("Connected to client")
@@ -134,8 +142,10 @@ class RoleManager:
                 return False
 
             self.sock.setblocking(0)
-            self.myThread.append(threading.Thread(target=self.manageConnectionWithWitch,
-                                                  args=[self.witchIPAddress]).start())
+            thread = threading.Thread(target=self.manageConnectionWithWitch, args=[self.witchIPAddress])
+            self.myThread.append(thread)
+            thread.start()
+
             # TODO togliere
             print("Connected to server")
 
@@ -226,7 +236,7 @@ class RoleManager:
 
         ipWinner = args[0]
         self.winnersIPAddress.append(ipWinner)  # add this winner to winners list
-
+        print("gestisco messaggio di colore toccato da " + str(ipWinner))
         self.ownNodeSpeaker(0, "")      # write on topic that another Kid wins
 
 
@@ -251,6 +261,8 @@ class RoleManager:
         # Kid:
         # 0 (the socket which contains the color arrived)
         # 1 (the "go!" socket arrived)
+
+        typeOfMess = int(typeOfMess)
 
         if self.role:   # I am a Witch
             if typeOfMess == 0:
@@ -342,6 +354,8 @@ class RoleManager:
         self.launch = self.prepareLaunchNode(self.role)
         self.startNode()
 
+        time.sleep(2)
+
         if self.role:                   # if I am a Witch
             self.ownNodeSpeaker(1, "")  # send to my Witch the number of players
 
@@ -355,7 +369,8 @@ class RoleManager:
 
         self.stopThreads = True
         for t in self.myThread:
-            t.join()
+            if t is not None:
+                t.join()
 
         self.host = None
         self.sock = None
@@ -368,7 +383,7 @@ class RoleManager:
         del self.topicHandlers[:]
         del self.winnersIPAddress[:]
 
-        self.winnersIPAddress = witchIp
+        self.witchIPAddress = witchIp
 
         self.config()
 
@@ -378,4 +393,9 @@ class RoleManager:
 
 
 if __name__ == "__main__":
-    rm = RoleManager()
+    try:
+        rm = RoleManager()
+    except rospy.ROSInterruptException:
+        print("ROSInterruptException")
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt")

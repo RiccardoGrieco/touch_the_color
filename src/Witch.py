@@ -42,6 +42,7 @@ class Witch:
             self.RMSpeakerPub.publish("0:" + color)     # tell to RM the color I decided
 
         elif typeOfMsg == 1:
+            print("scrivo topic: fine gioco")
             self.RMSpeakerPub.publish("1")              # tell to RM that the game ends
 
     def ownRoleManagerListener(self, msg):
@@ -58,6 +59,7 @@ class Witch:
                 self.ownRoleManagerSpeaker(1, "")
 
         elif msg[0] == "1":
+            print("leggo topic: " + "noTotKids = " + msg)
             self.noTotKids = int(msg[2:])
 
     def listen(self, msg):
@@ -71,9 +73,13 @@ class Witch:
         :return: True if the game ends; False otherwise.
         """
 
+        print("noWinners: " + str(self.noWinners) + ", noTotKids: " + str(self.noTotKids))
+
         if self.noWinners == self.noTotKids - 1:    # end-game test
+            print("ho determinato la fine del gioco")
             return True
         else:
+            print("colore toccato ma la partita non e' finita")
             return False
 
     def communicateLoser(self):
