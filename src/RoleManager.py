@@ -7,6 +7,7 @@ import threading
 import roslaunch
 import roslib
 import select
+import time
 from std_msgs.msg import String
 
 
@@ -40,6 +41,7 @@ class RoleManager:
         self.topicHandlers = []
         self.winnersIPAddress = []
         self.stopThreads = False
+        self.noConnected = 0
 
         # handlers to methods that manages sockets sends
         self.WITCH_COLOR_HANDLERS = [self.tellColorBySocket, self.tellEndGameBySocket]
@@ -62,6 +64,9 @@ class RoleManager:
         """
 
         msg = "0:" + color
+        noPartecipants = len(self.ipList)-1
+        while self.noConnected<noPartecipants:
+            time.sleep(0.1)
 
         for c in self.conn:
             c.send(msg)
@@ -106,7 +111,6 @@ class RoleManager:
             # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) I don't know what it do
             self.sock.bind((self.host, self.port))
             self.sock.listen(len(self.ipList) - 1)
-
             for i in range(1, len(self.ipList)):
                 conn, address = self.sock.accept()
                 conn.setblocking(0)
@@ -114,6 +118,7 @@ class RoleManager:
                 self.address.append(address)
                 self.myThread.append(threading.Thread(target=self.manageConnectionWithKid,
                                                       args=(conn, address)).start())
+                self.noConnected = self.noConnected+1
                 # TODO togliere
                 print("Connected to client")
         else:
@@ -342,6 +347,7 @@ class RoleManager:
         self.sock = None
         self.launch = None
         self.role = None
+        self.noConnected = 0
         del self.myThread[:]
         del self.conn[:]
         del self.address[:]
