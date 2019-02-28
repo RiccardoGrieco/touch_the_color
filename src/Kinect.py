@@ -81,7 +81,6 @@ class Kinect:
         # Widest blob extraction
         if len(contours) > 0:
             widestBlob = max(contours, key=cv2.contourArea)
-            ((x, y), radius) = cv2.minEnclosingCircle(widestBlob)
             # Centroid extraction using image moments
             M = cv2.moments(widestBlob)
             centroid = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
