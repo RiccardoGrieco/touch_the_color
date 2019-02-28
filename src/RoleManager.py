@@ -62,14 +62,17 @@ class RoleManager:
         Send to Kids' RM the chosen color.
         :param color: the chosen color
         """
-
+        # TODO
+        print("in tellColorBySocket")
         msg = "0:" + color
         noPartecipants = len(self.ipList)-1
         while self.noConnected<noPartecipants:
             time.sleep(0.1)
+            print("noConnected: " + str(self.noConnected))
 
         for c in self.conn:
             c.send(msg)
+        print("esco da tellColor....")
 
     def tellEndGameBySocket(self):
         """
@@ -121,16 +124,18 @@ class RoleManager:
                 self.noConnected = self.noConnected+1
                 # TODO togliere
                 print("Connected to client")
+            print("Connected to ALL clients")
         else:
 
             try:
                 self.sock.connect((self.host, self.port))
-            except:
+            except Exception as e:
+                print(str(e))
                 return False
 
             self.sock.setblocking(0)
             self.myThread.append(threading.Thread(target=self.manageConnectionWithWitch,
-                                                  args=self.witchIPAddress).start())
+                                                  args=[self.witchIPAddress]).start())
             # TODO togliere
             print("Connected to server")
 
@@ -153,6 +158,9 @@ class RoleManager:
                 if ready[0]:
                     data = self.sock.recv(size)
 
+                    # TODO togliere
+                    print("MESSAGGIO SOCKET DA WITCH: " + str(data))
+
                     if data:
                         params = data.split(":")                    # param[0]=type of msg; param[1]=msg
 
@@ -162,7 +170,7 @@ class RoleManager:
                         break
             except:
                 break
-        self.sock.shutdown()
+        self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
 
     def manageConnectionWithKid(self, conn, address):
@@ -182,6 +190,8 @@ class RoleManager:
 
                 if ready[0]:
                     data = conn.recv(size)
+                    # TODO togliere
+                    print("MESSAGGIO SOCKET DA KID: " + str(data))
 
                     if data:
                         params = data.split(":")                    # param[0]=type of msg; param[1]=msg
@@ -193,7 +203,7 @@ class RoleManager:
             except:
                 break
 
-        conn.shutdown()
+        conn.shutdown(socket.SHUT_RDWR)
         conn.close()
 
 
@@ -262,10 +272,14 @@ class RoleManager:
         # Kid
         # 0 (colore trovato) senza info
 
+        print("entro in ownNodeListener")
+
+        msg = msg.data
+
         if self.role:   # I am a Witch
             if msg[0] == "0":
                 color = msg[2:]
-
+                print("leggo topic: " + msg)
                 self.topicHandlers[0](color)    # call tellColorBySocket(color)
 
             elif msg[0] == "1":

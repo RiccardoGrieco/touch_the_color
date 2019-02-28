@@ -88,6 +88,8 @@ class Kid:
         # 0:color (color to touch)
         # 1 (go!)
 
+        msg = msg.data
+
         if msg[0] == "0":
             self.colorToTouch = msg[2:]
             self.gameStarted = True

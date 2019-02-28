@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import time
 from random import randint
 from util.Colors import Colors
 from std_msgs.msg import String
@@ -36,6 +37,8 @@ class Witch:
         """
 
         if typeOfMsg == 0:
+            time.sleep(3)
+            print("scrivo topic: " + str(typeOfMsg) + ": " + color)
             self.RMSpeakerPub.publish("0:" + color)     # tell to RM the color I decided
 
         elif typeOfMsg == 1:
@@ -46,6 +49,8 @@ class Witch:
 
         # 0 (another Kid touched the color)
         # 1 (number of total players)
+
+        msg = msg.data
 
         if msg[0] == "0":
             self.noWinners += 1
