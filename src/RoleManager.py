@@ -170,7 +170,7 @@ class RoleManager:
                 ready = select.select([self.sock], [], [], self.RECEIVE_SOCKET_TIMEOUT)
 
                 if ready[0]:
-                    data = self.sock.recv(size)
+                    data = self.sock.recv(size)[:-1]
 
                     if data:
                         # TODO togliere
@@ -178,12 +178,12 @@ class RoleManager:
 
                         for msg in data.split("|"):
                             params = msg.split(":")                    # param[0]=type of msg; param[1]=msg
-
                             self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
                     else:
                         print('Server disconnected')
                         break
-            except:
+            except Exception as e:
+                print(str(e))
                 break
         self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
@@ -204,7 +204,7 @@ class RoleManager:
                 ready = select.select([conn], [], [], self.RECEIVE_SOCKET_TIMEOUT)
 
                 if ready[0]:
-                    data = conn.recv(size)
+                    data = conn.recv(size)[:-1]
 
                     if data:
                         # TODO togliere
@@ -217,7 +217,8 @@ class RoleManager:
                     else:
                         print('Client disconnected')
                         break
-            except:
+            except Exception as e:
+                print(str(e))
                 break
 
         conn.shutdown(socket.SHUT_RDWR)
