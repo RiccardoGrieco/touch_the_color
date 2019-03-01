@@ -42,6 +42,8 @@ class RoleManager:
         self.winnersIPAddress = []
         self.stopThreads = False
         self.noConnected = 0
+        self.listenSock = None
+        self.listenSockSetted = False
 
         # handlers to methods that manages sockets sends
         self.WITCH_COLOR_HANDLERS = [self.tellColorBySocket, self.tellEndGameBySocket]
@@ -103,7 +105,7 @@ class RoleManager:
         """
         msg = "1:" + self.myIPAddress + "|"
 
-        self.sock.sendall(msg)
+        self.socketKidToWitch.sendall(msg)
 
     def createAndStartConnection(self):
         """
@@ -115,21 +117,26 @@ class RoleManager:
         self.host = self.witchIPAddress
         self.stopThreads = False
 
+        """
         if self.sock is not None:
             self.sock.close()
-
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        """
 
         if self.myIPAddress == self.witchIPAddress:
 
             # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) I don't know what it do
-            self.sock.bind((self.host, self.port))
-            self.sock.listen(len(self.ipList) - 1)
+            if not self.listenSockSetted:
+                self.listenSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.listenSock.bind((self.host, self.port))
+                self.listenSockSetted = True
+
+            self.listenSock.listen(len(self.ipList) - 1)
             for i in range(1, len(self.ipList)):
-                conn, address = self.sock.accept()
+                conn, address = self.listenSock.accept()
                 conn.setblocking(0)
                 self.conn.append(conn)
                 self.address.append(address)
+                thread = threading.Thread(target=self.manageSocket, args=[conn])
                 thread = threading.Thread(target=self.manageConnectionWithKid, args=(conn, address))
                 self.myThread.append(thread)
                 thread.start()
@@ -140,20 +147,53 @@ class RoleManager:
         else:
 
             try:
-                self.sock.connect((self.host, self.port))
+                self.socketKidToWitch = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socketKidToWitch.connect((self.host, self.port))
             except Exception as e:
                 print(str(e))
                 return False
 
-            self.sock.setblocking(0)
-            thread = threading.Thread(target=self.manageConnectionWithWitch, args=[self.witchIPAddress])
-            self.myThread.append(thread)
-            thread.start()
+            sock.setblocking(0)
+            socketThread = threading.Thread(target=manageSocket, args=[self.socketKidToWitch])
+            # thread = threading.Thread(target=self.manageConnectionWithWitch, args=[self.witchIPAddress])
+            self.myThread.append(socketThread)
+            socketThread.start()
 
             # TODO togliere
             print("Connected to server")
 
         return True
+
+    def manageSocket(self, socket):
+        """
+        Manage socket messages.
+        :param socket: the socket to listen.
+        """
+
+        size = 1024
+        while not self.stopThreads:
+            try:
+                ready = select.select([socket], [], [], self.RECEIVE_SOCKET_TIMEOUT)
+
+                if ready[0]:
+                    data = socket.recv(size)[:-1]
+
+                    if data:
+                        # TODO togliere
+                        print("MESSAGGIO SOCKET: " + str(data))
+
+                        for msg in data.split("|"):
+                            params = msg.split(":")                    # param[0]=type of msg; param[1]=msg
+                            self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
+                    else:
+                        print('Server/Client disconnected.')
+                        break
+            except Exception as e:
+                print(str(e))
+                break
+        socket.shutdown(socket.SHUT_RDWR)
+        socket.close()
+
 
     def manageConnectionWithWitch(self, witchIPAddress):
         """
@@ -309,8 +349,8 @@ class RoleManager:
 
         else:           # I am a Kid
             if msg[0] == "0":
-
-                self.sock.sendall("1:" + self.myIPAddress + "|")  # send a "color touched msg" to the Witch
+                self.topicHandlers[0]()     # tellColorTouchedBySocket
+                # self.sock.sendall("1:" + self.myIPAddress + "|")  # send a "color touched msg" to the Witch
 
     def prepareLaunchNode(self, iAmWitch):
         """
@@ -380,15 +420,24 @@ class RoleManager:
             if t is not None:
                 t.join()
 
+        """
+        if self.sock is not None:
+            try:
+                self.sock.shutdown(socket.SHUT_RDWR)
+                self.sock.close()
+            except Exception:
+                self.sock = None
+        """
+
         self.host = None
-        self.sock = None
         self.launch = None
         self.role = None
+        self.socketKidToWitch = None
         self.noConnected = 0
+        self.topicHandlers = []
         del self.myThread[:]
         del self.conn[:]
         del self.address[:]
-        del self.topicHandlers[:]
         del self.winnersIPAddress[:]
 
         self.witchIPAddress = witchIp

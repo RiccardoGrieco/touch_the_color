@@ -26,7 +26,7 @@ class Kinect_video:
         # Needed to interpretate images geometrically with camera parameters
         self.camera_model = image_geometry.PinholeCameraModel()
         # Color init
-        lightblue = np.uint8([[[102,0,204]]])
+        lightblue = np.uint8([[[204, 204, 0]]])
         hsv_lightblue = cv2.cvtColor(lightblue, cv2.COLOR_BGR2HSV)
         self.colorlower = np.array([hsv_lightblue[0][0][0]-CONST, 50, 50])
         self.colorupper = np.array([hsv_lightblue[0][0][0]+CONST, 255, 255])
@@ -80,11 +80,13 @@ class Kinect_video:
         if len(contours) > 0:
             widestBlob = max(contours, key=cv2.contourArea)
             ((_, _), self.radius) = cv2.minEnclosingCircle(widestBlob)
+            # print("RADIUS: ", self.radius)
             # Centroid extraction using image moments
             M = cv2.moments(widestBlob)
-            self.centroid = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-            cv2.circle(cvImage, self.centroid, int(self.radius), (0, 255, 255), 2)
-            cv2.circle(cvImage, self.centroid, 5, (0, 0, 255), -1)
+            if self.radius >= 20:
+                self.centroid = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                cv2.circle(cvImage, self.centroid, int(self.radius), (0, 255, 255), 2)
+                cv2.circle(cvImage, self.centroid, 5, (0, 0, 255), -1)
         else:
             self.centroid = None
         # Show output

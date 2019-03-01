@@ -74,7 +74,7 @@ class Kid:
         self.lastLookUpdateTime = -self.LOOK_UPDATE_RATE
         self.lastRandomField = -self.RANDOM_FIELD_RATE
 
-        self.gameStarted = False
+        self.inGame = False
         self.colorToTouch = ""
 
         # ROS library needed for image conversion from ROS to OpenCV
@@ -98,12 +98,12 @@ class Kid:
         ats.registerCallback(self.look)
 
         #TEMPORARY COLOR FOR TESTING
-        purple = np.uint8([[[102,0,204]]])
+        purple = np.uint8([[[204, 204, 0]]])
         hsv_lightblue = cv2.cvtColor(purple, cv2.COLOR_BGR2HSV)
         self.colorlower = np.array([hsv_lightblue[0][0][0]-20, 50, 50])
         self.colorupper = np.array([hsv_lightblue[0][0][0]+20, 255, 255])
 
-        self.gameStarted = True #TODO: temporary flag
+        self.inGame= True #TODO: temporary flag
 
     def ownRoleManagerListener(self, msg):
         # manage messages FROM RoleManager reading from its subscriber
@@ -120,7 +120,7 @@ class Kid:
             self.ownRoleManagerSpeaker(0)
             time.sleep(2)
 
-            self.gameStarted = True
+            self.inGame = True
 
 
     def ownRoleManagerSpeaker(self, typeOfMess):
@@ -135,10 +135,10 @@ class Kid:
         rate_start = rospy.Rate(3.3)
 
         # wait until the game starts
-        while not robot.gameStarted:
+        while not robot.inGame:
             time.sleep(0.5)
 
-        while not rospy.is_shutdown():
+        while self.inGame and not rospy.is_shutdown():
             self.canRead = False
             fieldVector = self.wander()
             if self.POIFound or time.time()-self.lastPOIFound<self.MAX_TIME_ELAPSED:
@@ -149,6 +149,8 @@ class Kid:
             self.canRead = True
             self.move(fieldVector)
             rate_start.sleep()
+
+        self.move(Vector2D())
 
     def look(self, RGBimage, depthImage, cameraInfo):
         currentTime = time.time()
@@ -161,10 +163,13 @@ class Kid:
         if centroid is not None:
             ray = self.extractCameraInfo(cameraInfo, centroid)
             distance = self.extractDepth(depthImage, centroid)
+
             if distance is not None and not np.isnan(distance):
                 self.POI.x = ray[0]*distance
                 self.POI.y = ray[2]*distance
                 self.POIFound = True
+                if distance <= self.SAFETY_DISTANCE:
+                    self.inGame = False
             else:
                 self.POIFound = False
 
