@@ -100,8 +100,8 @@ class Kid:
         #TEMPORARY COLOR FOR TESTING
         purple = np.uint8([[[102,0,204]]])
         hsv_lightblue = cv2.cvtColor(purple, cv2.COLOR_BGR2HSV)
-        self.colorlower = np.array([hsv_lightblue[0][0][0]-CONST, 50, 50])
-        self.colorupper = np.array([hsv_lightblue[0][0][0]+CONST, 255, 255])
+        self.colorlower = np.array([hsv_lightblue[0][0][0]-20, 50, 50])
+        self.colorupper = np.array([hsv_lightblue[0][0][0]+20, 255, 255])
 
         self.gameStarted = True #TODO: temporary flag
 
@@ -181,6 +181,7 @@ class Kid:
         return vector
 
     def wander(self): #TODO params
+        return Vector2D()
         #B
         currentTime = time.time()
         if currentTime-self.lastRandomField<self.RANDOM_FIELD_RATE:

@@ -10,7 +10,7 @@ import time
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge, CvBridgeError
 
-CONST = 10
+CONST = 20
 
 class Kinect_video:
     def __init__(self):
