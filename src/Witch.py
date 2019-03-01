@@ -75,7 +75,9 @@ class Witch:
 
         print("noWinners: " + str(self.noWinners) + ", noTotKids: " + str(self.noTotKids))
 
-        if self.noWinners == self.noTotKids - 1:    # end-game test
+        # TODO cambia
+        # if self.noWinners == self.noTotKids - 1:    # end-game test
+        if self.noWinners == self.noTotKids:
             print("ho determinato la fine del gioco")
             return True
         else:

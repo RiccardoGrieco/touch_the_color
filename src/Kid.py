@@ -95,7 +95,7 @@ class Kid:
 
             #TODO remove
             self.ownRoleManagerSpeaker(0)
-            return
+            time.sleep(2)
 
             self.gameStarted = True
 
