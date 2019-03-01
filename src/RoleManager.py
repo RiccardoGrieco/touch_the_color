@@ -66,7 +66,7 @@ class RoleManager:
         """
         # TODO
         print("in tellColorBySocket")
-        msg = "0:" + color
+        msg = "0:" + color + "|"
         noPartecipants = len(self.ipList)-1
         while self.noConnected < noPartecipants:
             time.sleep(0.1)
@@ -82,10 +82,14 @@ class RoleManager:
         Send to Kid's RM the end of the game and loser's IP address.
         """
 
+        last = self.winnersIPAddress[-1]
         self.winnersIPAddress.append(self.myIPAddress)
         # rescue ip in ipList but not in winnersIPAddress
         nextWitchIP = [ip for ip in self.ipList if ip not in self.winnersIPAddress]
-        msg = "2:" + str(nextWitchIP[0])
+        # if len(nextWitchIP) < 1:
+        nextWitchIP.append(last)
+
+        msg = "2:" + str(nextWitchIP[0]) + "|"
 
         for c in self.conn:
             c.send(msg)
@@ -97,7 +101,7 @@ class RoleManager:
         Only Kid call this method.
         Send to Witch's RM that the color has been touched.
         """
-        msg = "1:" + self.myIPAddress
+        msg = "1:" + self.myIPAddress + "|"
 
         self.sock.sendall(msg)
 
@@ -166,19 +170,20 @@ class RoleManager:
                 ready = select.select([self.sock], [], [], self.RECEIVE_SOCKET_TIMEOUT)
 
                 if ready[0]:
-                    data = self.sock.recv(size)
-
-                    # TODO togliere
-                    print("MESSAGGIO SOCKET DA WITCH: " + str(data))
+                    data = self.sock.recv(size)[:-1]
 
                     if data:
-                        params = data.split(":")                    # param[0]=type of msg; param[1]=msg
+                        # TODO togliere
+                        print("MESSAGGIO SOCKET DA WITCH: " + str(data))
 
-                        self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
+                        for msg in data.split("|"):
+                            params = msg.split(":")                    # param[0]=type of msg; param[1]=msg
+                            self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
                     else:
                         print('Server disconnected')
                         break
-            except:
+            except Exception as e:
+                print(str(e))
                 break
         self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
@@ -199,18 +204,21 @@ class RoleManager:
                 ready = select.select([conn], [], [], self.RECEIVE_SOCKET_TIMEOUT)
 
                 if ready[0]:
-                    data = conn.recv(size)
-                    # TODO togliere
-                    print("MESSAGGIO SOCKET DA KID: " + str(data))
+                    data = conn.recv(size)[:-1]
 
                     if data:
-                        params = data.split(":")                    # param[0]=type of msg; param[1]=msg
+                        # TODO togliere
+                        print("MESSAGGIO SOCKET DA KID: " + str(data))
 
-                        self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
+                        for msg in data.split("|"):
+                            params = msg.split(":")                    # param[0]=type of msg; param[1]=msg
+
+                            self.handlers[int(params[0])](params[1:])   # call the method that msg refers to
                     else:
                         print('Client disconnected')
                         break
-            except:
+            except Exception as e:
+                print(str(e))
                 break
 
         conn.shutdown(socket.SHUT_RDWR)
@@ -248,8 +256,8 @@ class RoleManager:
 
         ipLoser = args[0]
         self.launch.shutdown()  # TODO posso verificare che termina?
-
-        self.resetParameters(ipLoser)
+        threading.Thread(target=self.resetParameters, args=[ipLoser]).start()   # another thread will call resetParams
+        # self.resetParameters(ipLoser)
 
 
     def ownNodeSpeaker(self, typeOfMess, color):
@@ -302,7 +310,7 @@ class RoleManager:
         else:           # I am a Kid
             if msg[0] == "0":
 
-                self.sock.sendall("1:" + self.myIPAddress)  # send a "color touched msg" to the Witch
+                self.sock.sendall("1:" + self.myIPAddress + "|")  # send a "color touched msg" to the Witch
 
     def prepareLaunchNode(self, iAmWitch):
         """
