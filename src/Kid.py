@@ -3,16 +3,19 @@
 import rospy
 import math
 import time
+import message_filters
+import cv2
+import image_geometry
+import numpy as np
+import imutils
+
 
 from util.Vector2D import Vector2D
-
-from math import sqrt
-from math import pi
-from math import cos
-from math import sin
+from cv_bridge import CvBridge, CvBridgeError
+from math import sqrt, pi, cos, sin
 from random import random
 from std_msgs.msg import String
-from sensor_msgs.msg import PointCloud
+from sensor_msgs.msg import PointCloud, Image, CameraInfo
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
@@ -30,6 +33,7 @@ class Kid:
     MAX_TIME_ELAPSED = 10000#TODO 5
     POSE_UPDATE_RATE = 0.25 
     RANDOM_FIELD_RATE = 10
+    LOOK_UPDATE_RATE = 0.10
 
     # angular constants 
     DEG_TO_RAD = pi/180.0
@@ -67,11 +71,16 @@ class Kid:
         # temporal releasers
         self.lastPOIFound = -self.MAX_TIME_ELAPSED
         self.lastPoseUpdateTime = -self.POSE_UPDATE_RATE
+        self.lastLookUpdateTime = -self.LOOK_UPDATE_RATE
         self.lastRandomField = -self.RANDOM_FIELD_RATE
-
 
         self.gameStarted = False
         self.colorToTouch = ""
+
+        # ROS library needed for image conversion from ROS to OpenCV
+        self.bridge = CvBridge()
+        # Needed to interpretate images geometrically with camera parameters
+        self.camera_model = image_geometry.PinholeCameraModel()
 
         # publishers and subscribers
         self.velPub = rospy.Publisher("/RosAria/cmd_vel", Twist, queue_size=1)
@@ -80,7 +89,21 @@ class Kid:
         # TODO gestire queste bestiole qui
         self.RMSpeakerPub = rospy.Publisher("node_to_rolemanager", String, queue_size=10)
         self.RMListenerSub = rospy.Subscriber("rolemanager_to_node", String, self.ownRoleManagerListener)
+        # Subscriber for computer vision module
+        self.imageSub = message_filters.Subscriber("/camera/rgb/image_rect_color", Image)
+        self.depthSub = message_filters.Subscriber("/camera/depth_registered/image", Image)
+        self.cameraInfoSub = message_filters.Subscriber("/camera/depth_registered/camera_info", CameraInfo)
+        # Topic time synchronizer
+        ats = message_filters.ApproximateTimeSynchronizer([self.imageSub,self.depthSub,self.cameraInfoSub], queue_size = 10, slop = 0.1)
+        ats.registerCallback(self.look)
 
+        #TEMPORARY COLOR FOR TESTING
+        lightblue = np.uint8([[[204,204,0]]])
+        hsv_lightblue = cv2.cvtColor(lightblue, cv2.COLOR_BGR2HSV)
+        self.colorlower = np.array([hsv_lightblue[0][0][0]-CONST, 50, 50])
+        self.colorupper = np.array([hsv_lightblue[0][0][0]+CONST, 255, 255])
+
+        self.gameStarted = True #TODO: temporary flag
 
     def ownRoleManagerListener(self, msg):
         # manage messages FROM RoleManager reading from its subscriber
@@ -109,8 +132,7 @@ class Kid:
             self.RMSpeakerPub.publish("0")      # color touched
 
     def start(self):
-        rate_start = rospy.Rate(1)
-        rate_start.sleep()
+        rate_start = rospy.Rate(3.3)
 
         # wait until the game starts
         while not robot.gameStarted:
@@ -126,12 +148,25 @@ class Kid:
                 self.avoidReleaser = False
             self.canRead = True
             self.move(fieldVector)
+            rate_start.sleep()
 
-    def look(self, msg):
-        #PS
-        #TODO look perception scheme
-        # if time elapsed then ...
-        i = 0 #remove
+    def look(self, RGBimage, depthImage, cameraInfo):
+        currentTime = time.time()
+        if currentTime-self.lastLookUpdateTime<self.LOOK_UPDATE_RATE:
+            return
+        else:
+            self.lastLookUpdateTime = currentTime
+
+        centroid = self.readImageRGB(RGBimage)
+        if centroid is not None:
+            ray = self.extractCameraInfo(cameraInfo, centroid)
+            distance = self.extractDepth(depthImage, centroid)
+            if distance is not None and not np.isnan(distance):
+                self.POI.x = ray[0]*distance
+                self.POI.y = ray[2]*distance
+                self.POIFound = True
+            else:
+                self.POIFound = False
 
     def moveToColor(self, force):
         #B
@@ -185,7 +220,7 @@ class Kid:
         
         self.velPub.publish(msg)
 
-        time.sleep(0.3)
+        #time.sleep(0.3)
 
 #    def integrate(self): #TODO params
         #B
@@ -261,6 +296,56 @@ class Kid:
     def attract(self, d):
         return self.ATTRACTION_SLOPE*d+(1.0-self.ATTRACTION_SLOPE*self.SAFETY_DISTANCE)
 
+    # ray extraction from image
+    def extractCameraInfo(self, cameraInfo, point):
+        self.camera_model.fromCameraInfo(cameraInfo)
+        return self.camera_model.projectPixelTo3dRay(point)
+
+    # depth extraction from depth image
+    def extractDepth(self, image, coordinates):
+        try:
+            cvImage = self.bridge.imgmsg_to_cv2(image, "32FC1")
+        except CvBridgeError as e:
+            print(e)
+            return None
+        
+        # Flip image
+        cvImage = cv2.flip(cvImage,1)
+        return cvImage[coordinates[1]][coordinates[0]]
+
+    # centroid extraction from RGB image
+    def readImageRGB(self, image):
+        try:
+            cvImage = self.bridge.imgmsg_to_cv2(image,"bgr8")
+        except CvBridgeError as e:
+            print(e)
+            return None
+        # Flip image
+        cvImage = cv2.flip(cvImage,1)
+        # Applying Gaussian blur to remove noise
+        cvImage = cv2.GaussianBlur(cvImage,(11,11),0)
+
+        # RGB to HSV conversion
+        hsvImage = cv2.cvtColor(cvImage,cv2.COLOR_BGR2HSV)
+
+        # Blob extraction
+        mask = cv2.inRange(hsvImage, self.colorlower, self.colorupper)
+        mask = cv2.erode(mask, None, iterations=2)
+        mask = cv2.dilate(mask, None, iterations=2)
+        contours = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        contours = imutils.grab_contours(contours)
+        
+        # Widest blob extraction
+        if len(contours) > 0:
+            widestBlob = max(contours, key=cv2.contourArea)
+            # Centroid extraction using image moments
+            M = cv2.moments(widestBlob)
+            centroid = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        else:
+            centroid = None
+        return centroid
+
+    
 
 if __name__ == "__main__":
     try:
