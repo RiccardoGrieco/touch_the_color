@@ -98,8 +98,8 @@ class Kid:
         ats.registerCallback(self.look)
 
         #TEMPORARY COLOR FOR TESTING
-        lightblue = np.uint8([[[204,204,0]]])
-        hsv_lightblue = cv2.cvtColor(lightblue, cv2.COLOR_BGR2HSV)
+        purple = np.uint8([[[102,0,204]]])
+        hsv_lightblue = cv2.cvtColor(purple, cv2.COLOR_BGR2HSV)
         self.colorlower = np.array([hsv_lightblue[0][0][0]-CONST, 50, 50])
         self.colorupper = np.array([hsv_lightblue[0][0][0]+CONST, 255, 255])
 
