@@ -153,8 +153,8 @@ class RoleManager:
                 print(str(e))
                 return False
 
-            sock.setblocking(0)
-            socketThread = threading.Thread(target=manageSocket, args=[self.socketKidToWitch])
+            self.socketKidToWitch.setblocking(0)
+            socketThread = threading.Thread(target=self.manageSocket, args=[self.socketKidToWitch])
             # thread = threading.Thread(target=self.manageConnectionWithWitch, args=[self.witchIPAddress])
             self.myThread.append(socketThread)
             socketThread.start()
