@@ -26,6 +26,7 @@ class Kid:
     RELIABLE_DISTANCE = 5
     OBSTACLE_DISTANCE = 1
     SAFETY_DISTANCE = 0.5
+    COLOR_TOUCHED_DISTANCE = 0.55
     MIN_ATTRACTION_DISTANCE = 4.5
     MIN_ATTRACTION_FORCE = 0.7
 
@@ -99,7 +100,7 @@ class Kid:
         ats.registerCallback(self.look)
 
         #TEMPORARY COLOR FOR TESTING
-        purple = np.uint8([[[204, 204, 0]]])
+        purple = np.uint8([[[102, 0, 204]]])
         hsv_lightblue = cv2.cvtColor(purple, cv2.COLOR_BGR2HSV)
         self.colorlower = np.array([hsv_lightblue[0][0][0]-20, 50, 50])
         self.colorupper = np.array([hsv_lightblue[0][0][0]+20, 255, 255])
@@ -116,8 +117,8 @@ class Kid:
             self.colorToTouch = msg[2:]
 
             #TODO remove
-            self.ownRoleManagerSpeaker(0)
-            time.sleep(2)
+            # self.ownRoleManagerSpeaker(0)
+            # time.sleep(2)
 
             self.inGame = True
 
@@ -152,6 +153,7 @@ class Kid:
         self.move(Vector2D())
 
         if self.colorTouched:
+            print("TROVATO!")
             self.ownRoleManagerSpeaker(0)
 
     def look(self, RGBimage, depthImage, cameraInfo):
@@ -167,14 +169,34 @@ class Kid:
             distance = self.extractDepth(depthImage, centroid)
 
             if distance is not None and not np.isnan(distance):
-                self.POI.x = ray[0]*distance
-                self.POI.y = ray[2]*distance
-                self.POIFound = True
-                if distance <= self.SAFETY_DISTANCE:
+                candidatePOI = Vector2D(ray[0]*distance, ray[2]*distance)
+
+                if not self.POIFound and (currentTime - self.lastPOIFound) >= self.MAX_TIME_ELAPSED:
+                    self.POI = candidatePOI
+                    self.POIFound = True
+                else:
+                    currentPOI = self.POI + self.translationVector
+                    print("POI CORRENTE: ", currentPOI.getIntensity())
+                    print("POI CANDIDATO: ", candidatePOI.getIntensity())
+
+                    if candidatePOI.getIntensity() < currentPOI.getIntensity():
+                        self.POI = candidatePOI
+                        self.POIFound = True
+
+                # self.POI.x = ray[0]*distance
+                # self.POI.y = ray[2]*distance
+                # self.POIFound = True
+                #print("DISTANZA DA POI: ", distance)
+                if distance <= self.COLOR_TOUCHED_DISTANCE:
                     self.inGame = False
                     self.colorTouched = True
             else:
                 self.POIFound = False
+        else:
+            self.POIFound = False
+
+        if self.POIFound:
+            self.lastPOIFound = currentTime
 
     def moveToColor(self, force):
         #B
@@ -189,7 +211,7 @@ class Kid:
         return vector
 
     def wander(self): #TODO params
-        return Vector2D()
+        # return Vector2D()
         #B
         currentTime = time.time()
         if currentTime-self.lastRandomField<self.RANDOM_FIELD_RATE:
@@ -277,8 +299,8 @@ class Kid:
             self.translationVector = Vector2D()
             self.rotationMatrix = self.NO_ROTATION_MATRIX
             self.teta = 0
-            self.lastPOIFound = currentTime
-        elif currentTime - self.lastPOIFound<self.MAX_TIME_ELAPSED:
+            # self.lastPOIFound = currentTime
+        elif currentTime - self.lastPOIFound < self.MAX_TIME_ELAPSED:
             self.teta = orientation - self.startOrientation
             self.rotationMatrix = [[cos(self.teta), -sin(self.teta)], [sin(self.teta), cos(self.teta)]]
             self.translationVector = self.startPoint - point.multiplyMatrix(self.axisRotationMatrix)

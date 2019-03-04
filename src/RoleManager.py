@@ -165,7 +165,7 @@ class RoleManager:
 
         return True
 
-    def manageSocket(self, socket):
+    def manageSocket(self, threadSocket):
         """
         Manage socket messages.
         :param socket: the socket to listen.
@@ -174,10 +174,10 @@ class RoleManager:
         size = 1024
         while not self.stopThreads:
             try:
-                ready = select.select([socket], [], [], self.RECEIVE_SOCKET_TIMEOUT)
+                ready = select.select([threadSocket], [], [], self.RECEIVE_SOCKET_TIMEOUT)
 
                 if ready[0]:
-                    data = socket.recv(size)[:-1]
+                    data = threadSocket.recv(size)[:-1]
 
                     if data:
                         # TODO togliere
@@ -192,8 +192,8 @@ class RoleManager:
             except Exception as e:
                 print(str(e))
                 break
-        socket.shutdown(socket.SHUT_RDWR)
-        socket.close()
+        threadSocket.shutdown(socket.SHUT_RDWR)
+        threadSocket.close()
 
 
     def manageConnectionWithWitch(self, witchIPAddress):
