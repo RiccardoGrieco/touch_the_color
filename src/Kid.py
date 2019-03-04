@@ -32,7 +32,7 @@ class Kid:
     MIN_ATTRACTION_FORCE = 0.7
 
     # time and rate constants in seconds
-    MAX_TIME_ELAPSED = 10000#TODO 5
+    MAX_TIME_ELAPSED = 100#TODO 5
     POSE_UPDATE_RATE = 0.25 
     RANDOM_FIELD_RATE = 10
     LOOK_UPDATE_RATE = 0.10
@@ -132,7 +132,7 @@ class Kid:
             self.RMSpeakerPub.publish("0")      # color touched
 
     def start(self):
-        rate_start = rospy.Rate(3.3)
+        rate_start = rospy.Rate(4)
 
         # wait until the game starts
         while not self.inGame and not rospy.is_shutdown():
