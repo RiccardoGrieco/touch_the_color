@@ -125,9 +125,10 @@ class RoleManager:
 
         if self.myIPAddress == self.witchIPAddress:
 
-            # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) I don't know what it do
+
             if not self.listenSockSetted:
                 self.listenSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.listenSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 self.listenSock.bind((self.host, self.port))
                 self.listenSockSetted = True
 
@@ -138,7 +139,6 @@ class RoleManager:
                 self.conn.append(conn)
                 self.address.append(address)
                 thread = threading.Thread(target=self.manageSocket, args=[conn])
-                thread = threading.Thread(target=self.manageConnectionWithKid, args=(conn, address))
                 self.myThread.append(thread)
                 thread.start()
                 self.noConnected = self.noConnected+1
