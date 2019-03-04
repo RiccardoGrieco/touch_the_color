@@ -99,11 +99,9 @@ class Kid:
         ats = message_filters.ApproximateTimeSynchronizer([self.imageSub,self.depthSub,self.cameraInfoSub], queue_size = 10, slop = 0.1)
         ats.registerCallback(self.look)
 
-        #TEMPORARY COLOR FOR TESTING
-        purple = np.uint8([[[102, 0, 204]]])
-        hsv_lightblue = cv2.cvtColor(purple, cv2.COLOR_BGR2HSV)
-        self.colorlower = np.array([hsv_lightblue[0][0][0]-20, 50, 50])
-        self.colorupper = np.array([hsv_lightblue[0][0][0]+20, 255, 255])
+        # Color target
+        self.colorlower = None
+        self.colorupper = None
 
     def ownRoleManagerListener(self, msg):
         # manage messages FROM RoleManager reading from its subscriber
@@ -120,6 +118,7 @@ class Kid:
             # self.ownRoleManagerSpeaker(0)
             # time.sleep(2)
 
+            self.colorlower, self.colorupper = Colors.getColor(self.colorToTouch)
             self.inGame = True
 
 
@@ -158,7 +157,7 @@ class Kid:
 
     def look(self, RGBimage, depthImage, cameraInfo):
         currentTime = time.time()
-        if currentTime-self.lastLookUpdateTime<self.LOOK_UPDATE_RATE:
+        if not self.inGame or currentTime-self.lastLookUpdateTime<self.LOOK_UPDATE_RATE:
             return
         else:
             self.lastLookUpdateTime = currentTime

@@ -17,4 +17,8 @@ class Colors:
     kinectValues.append((np.array([105,50,50]),np.array([135,255,255])))
     kinectValues.append((np.array([45,50,50]),np.array([75,255,255])))
     kinectValues.append((np.array([15,50,50]),np.array([45,255,255])))
-    kinectValues.append((np.array([135,50,50]),np.array([165,255,255])))
+    kinectValues.append((np.array([145,50,50]),np.array([155,255,255])))
+
+    def getColor(self, colorName):
+        colorID = Colors.colorNames.index(colorName)
+        return Colors.kinectValues[colorID]
