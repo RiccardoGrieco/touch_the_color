@@ -104,8 +104,6 @@ class Kid:
         self.colorlower = np.array([hsv_lightblue[0][0][0]-20, 50, 50])
         self.colorupper = np.array([hsv_lightblue[0][0][0]+20, 255, 255])
 
-        self.inGame= True #TODO: temporary flag
-
     def ownRoleManagerListener(self, msg):
         # manage messages FROM RoleManager reading from its subscriber
 
@@ -136,7 +134,7 @@ class Kid:
         rate_start = rospy.Rate(3.3)
 
         # wait until the game starts
-        while not robot.inGame:
+        while not self.inGame and not rospy.is_shutdown():
             time.sleep(0.5)
 
         while self.inGame and not rospy.is_shutdown():

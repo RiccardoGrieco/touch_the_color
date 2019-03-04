@@ -15,6 +15,7 @@ class RoleManager:
 
     PORT = 65535
     RECEIVE_SOCKET_TIMEOUT = 3
+    CONNECTION_ATTEMPT_TIMEOUT = 5
 
     def __init__(self):
         """
@@ -407,8 +408,14 @@ class RoleManager:
         if self.role:                   # if I am a Witch
             self.ownNodeSpeaker(1, "")  # send to my Witch the number of players
 
-        while not connected:
+        startConnectionAttempt = time.time()
+        while not connected and time.time()-startConnectionAttempt<self.CONNECTION_ATTEMPT_TIMEOUT:
             connected = self.createAndStartConnection()
+        
+        if not connected:
+            print("ESCO")
+            self.launch.shutdown()
+            exit(1)
 
     def resetParameters(self, witchIp):
         """
