@@ -76,6 +76,7 @@ class Kid:
 
         self.inGame = False
         self.colorToTouch = ""
+        self.colorTouched = False
 
         # ROS library needed for image conversion from ROS to OpenCV
         self.bridge = CvBridge()
@@ -152,6 +153,9 @@ class Kid:
 
         self.move(Vector2D())
 
+        if self.colorTouched:
+            self.ownRoleManagerSpeaker(0)
+
     def look(self, RGBimage, depthImage, cameraInfo):
         currentTime = time.time()
         if currentTime-self.lastLookUpdateTime<self.LOOK_UPDATE_RATE:
@@ -170,6 +174,7 @@ class Kid:
                 self.POIFound = True
                 if distance <= self.SAFETY_DISTANCE:
                     self.inGame = False
+                    self.colorTouched = True
             else:
                 self.POIFound = False
 
