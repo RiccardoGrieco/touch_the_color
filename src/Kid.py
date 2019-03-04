@@ -11,6 +11,7 @@ import imutils
 
 
 from util.Vector2D import Vector2D
+from util.Colors import getColor
 from cv_bridge import CvBridge, CvBridgeError
 from math import sqrt, pi, cos, sin
 from random import random
@@ -26,7 +27,7 @@ class Kid:
     RELIABLE_DISTANCE = 5
     OBSTACLE_DISTANCE = 1
     SAFETY_DISTANCE = 0.5
-    COLOR_TOUCHED_DISTANCE = 0.55
+    COLOR_TOUCHED_DISTANCE = 0.65
     MIN_ATTRACTION_DISTANCE = 4.5
     MIN_ATTRACTION_FORCE = 0.7
 
@@ -118,7 +119,7 @@ class Kid:
             # self.ownRoleManagerSpeaker(0)
             # time.sleep(2)
 
-            self.colorlower, self.colorupper = Colors.getColor(self.colorToTouch)
+            self.colorlower, self.colorupper = getColor(self.colorToTouch)
             self.inGame = True
 
 
@@ -350,10 +351,11 @@ class Kid:
         except CvBridgeError as e:
             print(e)
             return None
+        centroid = None
         # Flip image
         cvImage = cv2.flip(cvImage,1)
         # Applying Gaussian blur to remove noise
-        cvImage = cv2.GaussianBlur(cvImage,(11,11),0)
+        cvImage = cv2.GaussianBlur(cvImage,(3,3),0)
 
         # RGB to HSV conversion
         hsvImage = cv2.cvtColor(cvImage,cv2.COLOR_BGR2HSV)
@@ -368,11 +370,12 @@ class Kid:
         # Widest blob extraction
         if len(contours) > 0:
             widestBlob = max(contours, key=cv2.contourArea)
-            # Centroid extraction using image moments
-            M = cv2.moments(widestBlob)
-            centroid = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        else:
-            centroid = None
+            ((_, _), radius) = cv2.minEnclosingCircle(widestBlob)
+            if radius >= 20:
+                # Centroid extraction using image moments
+                M = cv2.moments(widestBlob)
+                centroid = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+
         return centroid
 
     
