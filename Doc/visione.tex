@@ -1,0 +1,69 @@
+Il modulo inerente agli aspetti di computer vision del progetto in esame è stato realizzato mediante l'uso di una telecamera RGB-D, in particolare tramite una {\itshape Microsoft Kinect}, il cui stream video è stato processato con l'ausilio dell'API {\itshape OpenCV}.\newline
+Il modulo di visione in questione prevede la realizzazione della seguente pipeline:
+\begin{enumerate}
+	\item acquisizione dello stream video RGB e di profondità e conversione dello spazio di colore da RGB a HSV
+	\item ricerca di uno o più blob del colore target associato alla sessione corrente
+	\item estrazione del valore di profondità associato ai centroidi dei blob trovati e determinazione del target
+	\item calcolo del vettore in direzione del target
+\end{enumerate}
+\subsection{Acquisizione dello stream video}
+L'acquisizione dello stream video tramite camera RGB-D è stata realizzata mediante l'uso del framework open-source {\itshape OpenNI}, ideato per accedere alle informazioni registrate dalla camera con un livello di astrazione alto. In particolare, l'acquisizione dello stream video RGB è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/rgb/image\_rect\_color} mentre l'acquisizione dello stream video di profondità è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/depth\_registered/image}.
+
+Siccome entrambi i topic forniscono informazioni mediante messaggi di tipo \texttt{sensor\_msgs/Image}, per permettere l'analisi tramite {\itshape OpenCV} è necessario convertire entrambi gli stream video nel formato \texttt {cv::Mat}. La suddetta conversione è stata realizzata mediante l'uso della libreria {\itshape CvBridge} con la seguente funzione di conversione
+\begin{center}
+	\texttt{imgmsg\_to\_cv2(frame\_video, encoding)}
+\end{center}
+dove per encoding sono stati utilizzati \texttt{bgr8} ed \texttt{32FC1} rispettivamente per la conversione dell'immagine RGB e di profondità.
+
+%immagini RGB e D
+
+Per agevolare l'analisi dei frame è stato effettuato un preprocessing dei frame RGB. Per ridurre il rumore presente è stato applicato un filtro gaussiano realizzato mediante l'uso di un kernel di dimensioni \texttt{3x3}. L'applicazione del suddetto filtro è stata ottenuta mediante l'uso della funzione \texttt{cv2.GaussianBlur()}.
+
+%immagine
+
+Essendo questa fase fortemente soggetta ad una discriminazione dei colori presenti nei frame, è stata effettuata una conversione dello spazio di colori da \texttt{RGB} a \texttt{HSV} mediante la funzione \texttt{cv2.cvtColor()}. Così facendo viene gestita in maniera più "naturale" la distinzione dei colori, in quanto nello spazio HSV la variazione dei colori è soggetta soltanto alla componente {\itshape Hue} a differenza dello spazio RGB, in cui un colore viene visto come una combinazione di rosso, giallo e blu.
+
+\subsection{Estrazione del blob e calcolo del centroide}
+La {\itshape palette} dei colori a disposizione nel gioco è stata realizzata mediante l'uso di intervalli di colore espressi in formato HSV. Ad ogni colore quindi è associato un intervallo e durante la fase di estrazione del colore, ogni valore contenuto nell'intervallo associato al colore target è considerato valido.
+
+Per realizzare tale selezione è stata utilizzata la funzione
+\begin{center}
+	\texttt{cv2.inRange(frame\_video, lower\_bound, upper\_bound)}
+\end{center} 
+dove per \texttt{lower\_bound} ed \texttt{upper\_bound} sono stati inseriti gli estremi dell'intervallo associati al colore target. Dalla funzione viene ritornata una maschera il cui scopo è di isolare dal frame corrente soltanto le informazioni utili alla ricerca del blob.
+
+Tuttavia la maschera evidenzia anche piccole porzioni di immagine che possono deviare la corretta ricerca del blob e che quindi costituiscono un rumore. Per eliminare gran parte di tale rumore è stata effettuata un'operazione di {\itshape erosione} tramite l'uso della funzione \texttt{cv2.erode()} seguita da un'operazione di {\itshape dilatazione} tramite l'uso della funzione \texttt{cv2.dilate()} utile a ristabilire le proporzioni delle componenti utili evidenziate dalla maschera.
+
+% immagini erosione dilatazione
+
+Per tener traccia dei blob presenti nella scena, è stata utilizzata la funzione
+\begin{center}
+	\texttt{cv2.findContours(mask, cv2.RETR\_EXTERNAL, cv2.CHAIN\_APPROX\_SIMPLE)}
+\end{center}
+dove \texttt{cv2.RETR\_EXTERNAL} indica che vengono estratti soltanto i contorni esterni (trascurando quindi i contorni innestati in altri), mentre \texttt{cv2.CHAIN\_APPROX\_SIMPLE} indica che viene realizzata un'ottimizzazione dello spazio necessario a memorizzare i contorni.
+
+Successivamente, per ogni blob, tramite la funzione \texttt{cv2.minEnclosingCircle()} viene estratto il raggio del cerchio di area minima che lo include. Così facendo è possibile rimuovere il rumore restante che non è stato eliminato in fase di erosione. Vengono considerati come validi soltanto i blob aventi raggio superiore ad una soglia fissata apriori.
+
+Arrivati a questo punto, si ha a disposizione una lista di blob candidati alla ricerca del target valido da seguire. Viene quindi estratto il centroide di ogni blob mediante i {\itshape momenti dell'immagine} associati al contorno del blob ottenuti tramite la funzione \texttt{cv2.moments(contour)}. In particolare, le coordinate che identificano un centroide sono così espresse:
+\begin{center}
+	$C_x=\frac{M_{10}}{M_{00}}$, $C_y=\frac{M_{01}}{M_{00}}$
+\end{center}
+
+% immagine
+
+\subsection{Estrazione della profondità}
+Giunti a questa fase, si ha a disposizione una lista di centroidi rappresentanti i candidati per la scelta del target da seguire. L'idea è di considerare come target il centroide avente distanza minima dalla camera. Per realizzare tale operazione viene utilizzata la componente di profondità processata dalla camera RGB-D.
+
+L'immagine di profondità a disposizione è nel formato \texttt{cv::Mat}, quindi per accedere alla distanza associata ad ogni singolo pixel è sufficiente estrarre dall'immagine la componente $(C_x,C_y)$. Così facendo si otterrà un valore in {\itshape floating point} a 32 bit rappresentante la distanza in metri del punto osservato nel pixel dalla camera.
+
+\subsection{Calcolo della direzione da seguire}
+Per ottenere il vettore in direzione del target, è stato utilizzato il raggio uscente dalla camera ed entrante nel pixel che costituisce il centroide del target.\newline
+Essendo l'immagine ottenuta per proiezione prospettica della scena visualizzata dalla camera su di un piano di proiezione, il raggio ottenuto potrà essere considerato valido per la generazione del vettore direzionale che vogliamo realizzare.
+
+È stato utilizzato quindi il modello della {\itshape Pin-hole camera} per elaborare le informazioni associate alla Kinect ed estrarre il raggio in questione. Tali informazioni vengono estratte dal topic \texttt{/camera/depth\_registered/camera\_info} sottoforma di messaggio \texttt{sensor\_msgs/CameraInfo}.
+Il modello della camera viene realizzato mediante l'uso dell'oggetto \texttt{PinholeCameraModel} contenuto nella libreria \texttt{image\_geometry} nativa di ROS.
+Successivamente, mediante la funzione
+\begin{center}
+	\texttt{projectPixelTo3dRay(centroid)}
+\end{center}
+viene estratto il raggio uscente dalla camera in direzione della coppia di coordinate $C_x,C_y$ sottoforma di versore. Infine, dalla moltiplicazione delle componenti $x,z$ del raggio appena ottenuto con la distanza estratta allo step precedente, viene generato il vettore direzionale utile al robot per raggiungere il target.
