@@ -2,5 +2,9 @@
 \contentsline {section}{\numberline {2}Modulo Motorio}{4}
 \contentsline {section}{\numberline {3}Modulo per la Comunicazione}{5}
 \contentsline {subsection}{\numberline {3.1}Il Protocollo di Comunicazione}{5}
-\contentsline {section}{\numberline {4}Modulo di Visione}{6}
-\contentsline {section}{\numberline {5}Esperimenti}{7}
+\contentsline {section}{\numberline {4}Modulo di Visione}{7}
+\contentsline {subsection}{\numberline {4.1}Acquisizione dello stream video}{7}
+\contentsline {subsection}{\numberline {4.2}Estrazione del blob e calcolo del centroide}{8}
+\contentsline {subsection}{\numberline {4.3}Estrazione della profondit\`a}{9}
+\contentsline {subsection}{\numberline {4.4}Calcolo della direzione da seguire}{9}
+\contentsline {section}{\numberline {5}Esperimenti}{10}

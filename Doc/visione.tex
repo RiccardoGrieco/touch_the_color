@@ -7,7 +7,8 @@ Il modulo di visione in questione prevede la realizzazione della seguente pipeli
 	\item calcolo del vettore in direzione del target
 \end{enumerate}
 \subsection{Acquisizione dello stream video}
-L'acquisizione dello stream video tramite camera RGB-D è stata realizzata mediante l'uso del framework open-source {\itshape OpenNI}, ideato per accedere alle informazioni registrate dalla camera con un livello di astrazione alto. In particolare, l'acquisizione dello stream video RGB è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/rgb/image\_rect\_color} mentre l'acquisizione dello stream video di profondità è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/depth\_registered/image}.
+L'acquisizione dello stream video tramite camera RGB-D è stata realizzata mediante l'uso del framework open-source {\itshape OpenNI}, ideato per accedere alle informazioni registrate dalla camera con un livello di astrazione alto. In particolare, l'acquisizione dello stream video RGB è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/rgb/image\_rect\_color} mentre l'acquisizione dello stream video di profondità è stata realizzata attraverso la sottoscrizione al topic \\
+\texttt {/camera/depth\_registered/image}.
 
 Siccome entrambi i topic forniscono informazioni mediante messaggi di tipo \texttt{sensor\_msgs/Image}, per permettere l'analisi tramite {\itshape OpenCV} è necessario convertire entrambi gli stream video nel formato \texttt {cv::Mat}. La suddetta conversione è stata realizzata mediante l'uso della libreria {\itshape CvBridge} con la seguente funzione di conversione
 \begin{center}
@@ -42,7 +43,7 @@ Per tener traccia dei blob presenti nella scena, è stata utilizzata la funzione
 \end{center}
 dove \texttt{cv2.RETR\_EXTERNAL} indica che vengono estratti soltanto i contorni esterni (trascurando quindi i contorni innestati in altri), mentre \texttt{cv2.CHAIN\_APPROX\_SIMPLE} indica che viene realizzata un'ottimizzazione dello spazio necessario a memorizzare i contorni.
 
-Successivamente, per ogni blob, tramite la funzione \texttt{cv2.minEnclosingCircle()} viene estratto il raggio del cerchio di area minima che lo include. Così facendo è possibile rimuovere il rumore restante che non è stato eliminato in fase di erosione. Vengono considerati come validi soltanto i blob aventi raggio superiore ad una soglia fissata apriori.
+Successivamente, per ogni blob, tramite la funzione \texttt{cv2.minEnclosingCircle()} viene estratto il raggio del cerchio di area minima che lo include. Così facendo è possibile rimuovere il rumore restante che non è stato eliminato in fase di erosione. Vengono considerati come validi soltanto i blob aventi raggio superiore ad una soglia fissata a priori.
 
 Arrivati a questo punto, si ha a disposizione una lista di blob candidati alla ricerca del target valido da seguire. Viene quindi estratto il centroide di ogni blob mediante i {\itshape momenti dell'immagine} associati al contorno del blob ottenuti tramite la funzione \texttt{cv2.moments(contour)}. In particolare, le coordinate che identificano un centroide sono così espresse:
 \begin{center}
