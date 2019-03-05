@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.12.8)  5 MAR 2019 11:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.12.8)  5 MAR 2019 11:29
 entering extended mode
 **./main.tex
 (main.tex
@@ -290,12 +290,7 @@ File: images/DIETI.png Graphic file (type png)
 <use images/DIETI.png>
 Package pdftex.def Info: images/DIETI.png  used on input line 6.
 (pdftex.def)             Requested size: 341.43437pt x 87.1772pt.
-<images/prisca.jpg, id=3, 225.84375pt x 225.84375pt>
-File: images/prisca.jpg Graphic file (type jpg)
-<use images/prisca.jpg>
-Package pdftex.def Info: images/prisca.jpg  used on input line 7.
-(pdftex.def)             Requested size: 85.35696pt x 85.35628pt.
-<images/pioneer.jpg, id=4, 321.2pt x 164.615pt>
+<images/pioneer.jpg, id=3, 321.2pt x 164.615pt>
 File: images/pioneer.jpg Graphic file (type jpg)
 <use images/pioneer.jpg>
 Package pdftex.def Info: images/pioneer.jpg  used on input line 30.
@@ -303,27 +298,26 @@ Package pdftex.def Info: images/pioneer.jpg  used on input line 30.
 ) [1
 
 {C:/Users/matar/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map} <./images/DI
-ETI.png> <./images/prisca.jpg> <./images/pioneer.jpg>]
-(main.toc)
+ETI.png> <./images/pioneer.jpg>] (main.toc)
 \tf@toc=\write3
 \openout3 = `main.toc'.
 
- [2] [3] [4] [5] [6] [7] (main.aux) ) 
+ [2] [3] [4]
+[5] [6] [7] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 3320 strings out of 492970
- 43926 string characters out of 3135855
+ 3315 strings out of 492970
+ 43827 string characters out of 3135855
  117411 words of memory out of 3000000
- 7148 multiletter control sequences out of 15000+200000
+ 7144 multiletter control sequences out of 15000+200000
  5747 words of font info for 21 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  41i,5n,35p,273b,175s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files/MiKTeX 2.9/fonts/type1/p
-ublic/amsfonts/cm/cmbx12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/am
-sfonts/cm/cmr12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
-/cmr17.pfb>
-Output written on main.pdf (7 pages, 143009 bytes).
+<C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfont
+s/cm/cmbx12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr
+12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb>
+Output written on main.pdf (7 pages, 129817 bytes).
 PDF statistics:
- 43 PDF objects out of 1000 (max. 8388607)
+ 42 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
