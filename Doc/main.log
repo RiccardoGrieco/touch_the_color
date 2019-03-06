@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.12.8)  5 MAR 2019 19:17
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.12.8)  6 MAR 2019 09:43
 entering extended mode
 **./main.tex
 (main.tex
@@ -312,22 +312,24 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \tf@toc=\write3
 \openout3 = `main.toc'.
 
- [2] (intro.tex)
-[3] [4] (comunicazione.tex [5]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 24.
+ [2] (intro.tex
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 12.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 24.
-<images/CommunicationProtocol.png, id=26, 337.26pt x 390.45876pt>
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 12.
+ [3]) [4] [5]
+(comunicazione.tex [6]
+<images/CommunicationProtocol.png, id=31, 337.26pt x 390.45876pt>
 File: images/CommunicationProtocol.png Graphic file (type png)
 <use images/CommunicationProtocol.png>
 Package pdftex.def Info: images/CommunicationProtocol.png  used on input line 3
 3.
 (pdftex.def)             Requested size: 298.75264pt x 345.88664pt.
-) [6 <./images/CommunicationProtocol.png>] (visione.tex [7] [8]
+) [7 <./images/CommunicationProtocol.png>] (visione.tex
+[8] [9]
 Overfull \hbox (1.4917pt too wide) in paragraph at lines 58--59
 \OT1/cmr/m/n/12 cedere alla dis-tanza as-so-ci-ata ad ogni sin-golo pixel e su
 f-fi-ciente es-trarre dall'immagine
@@ -339,7 +341,7 @@ Overfull \hbox (3.16342pt too wide) in paragraph at lines 64--67
 1/cmr/m/n/12 con-tenuto nella li-bre-ria \OT1/cmtt/m/n/12 image[]geometry
  []
 
-) [9] [10] (main.aux) ) 
+) [10] [11] (main.aux) ) 
 Here is how much of TeX's memory you used:
  3402 strings out of 492970
  45301 string characters out of 3135855
@@ -348,18 +350,18 @@ Here is how much of TeX's memory you used:
  10917 words of font info for 41 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  41i,6n,35p,1447b,229s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts
-/cm/cmbx12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi
-12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C
-:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program
- Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files/Mi
-KTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files/MiKTeX 2.9/f
-onts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/typ
-e1/public/amsfonts/cm/cmti12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/publi
-c/amsfonts/cm/cmtt12.pfb>
-Output written on main.pdf (10 pages, 180182 bytes).
+<C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfont
+s/cm/cmbx12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmm
+i12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi8.pfb><
+C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Progra
+m Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files/M
+iKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files/MiKTeX 2.9/
+fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/ty
+pe1/public/amsfonts/cm/cmti12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/publ
+ic/amsfonts/cm/cmtt12.pfb>
+Output written on main.pdf (11 pages, 183420 bytes).
 PDF statistics:
- 77 PDF objects out of 1000 (max. 8388607)
+ 80 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  16 words of extra memory for PDF output out of 10000 (max. 10000000)
 
