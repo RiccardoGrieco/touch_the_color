@@ -43,6 +43,14 @@ class Vector2D:
             self.calculateInfo()
         return self.versorY
 
+    def setX(self, x):
+        self.x = x
+        self.infoCalculated = False
+
+    def setY(self, y):
+        self.y = y
+        self.infoCalculated = False
+
     def multiplyMatrix(self, matrix):
         x = self.x*matrix[0][0] + self.y*matrix[0][1]
         y = self.x*matrix[1][0] + self.y*matrix[1][1]

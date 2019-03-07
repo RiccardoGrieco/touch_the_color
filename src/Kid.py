@@ -234,13 +234,22 @@ class Kid:
 
     def move(self, vector):
         #MS
+
+        # cut intensity when >1
+        intensity = vector.getIntensity()
+        if intensity > 1.0:
+            versorX = vector.getVersorX()
+            versorY = vector.getVersorY()
+            vector.setX(versorX)
+            vector.setY(versorY)
+
         degree = math.atan2(vector.x, vector.y)
-        angularVelocity = degree/2.0
+        angularVelocity = degree/2.0 #max 1,57 radians per seconds (90° per seconds)
         
         msg = Twist()
         
-        linearVelocity = vector.y/4.0
-        if linearVelocity<=0.0001 : #TODO abs(linearVelocity) to admit backwards movement
+        linearVelocity = vector.y/4.0 # max 0.25
+        if linearVelocity<=0.0001: #TODO abs(linearVelocity) to admit backwards movement
             linearVelocity = 0.0
 
         if abs(degree)<=self.ANGULAR_THRESHOLD or pi-self.ANGULAR_THRESHOLD<=abs(degree)<=pi+self.ANGULAR_THRESHOLD:
