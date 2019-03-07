@@ -32,16 +32,18 @@ class Kid:
     MIN_ATTRACTION_FORCE = 0.7
 
     # time and rate constants in seconds
-    MAX_TIME_ELAPSED = 100#TODO 5
+    MAX_TIME_ELAPSED = 100#TODO 60?
     POSE_UPDATE_RATE = 0.25 
     RANDOM_FIELD_RATE = 10
     LOOK_UPDATE_RATE = 0.10
+    SONAR_UPDATE_RATE = 0.10
 
     # angular constants 
     DEG_TO_RAD = pi/180.0
     RAG_TO_DEG = 180.0/pi
     ANGULAR_THRESHOLD = 3.0 * DEG_TO_RAD
     NO_ROTATION_MATRIX = [[1.0,0.0],[0.0,1.0]]
+    NO_TRANSLATION_VECTOR = Vector2D()
 
     # attraction constants
     MAX_ATTRACTION_DISTANCE = 4.5
@@ -58,7 +60,7 @@ class Kid:
         # attributes for pose management and POI robot-centric localization
         self.axisRotationMatrix = self.NO_ROTATION_MATRIX
         self.startOrientation = 0.0
-        self.translationVector = Vector2D()
+        self.translationVector = self.NO_TRANSLATION_VECTOR
         self.startPoint = Vector2D()
         self.theta = 0.0
         self.rotationMatrix = self.NO_ROTATION_MATRIX
@@ -74,6 +76,7 @@ class Kid:
         self.lastPOIFound = -self.MAX_TIME_ELAPSED
         self.lastPoseUpdateTime = -self.POSE_UPDATE_RATE
         self.lastLookUpdateTime = -self.LOOK_UPDATE_RATE
+        self.lastSonarReadTime = -self.SONAR_UPDATE_RATE
         self.lastRandomField = -self.RANDOM_FIELD_RATE
 
         self.inGame = False
@@ -98,7 +101,7 @@ class Kid:
         self.cameraInfoSub = message_filters.Subscriber("/camera/depth_registered/camera_info", CameraInfo)
         # Topic time synchronizer
         ats = message_filters.ApproximateTimeSynchronizer([self.imageSub,self.depthSub,self.cameraInfoSub], queue_size = 10, slop = 0.1)
-        ats.registerCallback(self.look)
+        ats.registerCallback(self.RGBDSubscriber)
 
         # Color target
         self.colorlower = None
@@ -114,10 +117,6 @@ class Kid:
 
         if msg[0] == "0":
             self.colorToTouch = msg[2:]
-
-            #TODO remove
-            # self.ownRoleManagerSpeaker(0)
-            # time.sleep(2)
 
             self.colorlower, self.colorupper = getColor(self.colorToTouch)
             self.inGame = True
@@ -140,6 +139,8 @@ class Kid:
 
         while self.inGame and not rospy.is_shutdown():
             self.canRead = False
+            self.look()
+            self.feelForce()
             fieldVector = self.wander()
             if self.POIFound or time.time()-self.lastPOIFound<self.MAX_TIME_ELAPSED:
                 fieldVector = self.moveToColor(fieldVector)
@@ -156,12 +157,29 @@ class Kid:
             print("TROVATO!")
             self.ownRoleManagerSpeaker(0)
 
-    def look(self, RGBimage, depthImage, cameraInfo):
+    def RGBDSubscriber(self, RGBimage, depthImage, cameraInfo):
         currentTime = time.time()
         if not self.inGame or currentTime-self.lastLookUpdateTime<self.LOOK_UPDATE_RATE:
             return
         else:
             self.lastLookUpdateTime = currentTime
+        
+        self.RGBimage = RGBimage
+        self.depthImage = depthImage
+        self.cameraInfo = cameraInfo
+
+    def look(self):
+        currentTime = time.time()
+        self.lookForPOI(currentTime)        # process camera image
+        self.updateNavigation(currentTime)  # update navigation to POI information
+
+    def lookForPOI(self, currentTime):
+        #TODO     
+        # try to avoid synchronization with subscriber problems
+        # should actually use a structure that encapsulate all of them
+        RGBimage = self.RGBimage
+        cameraInfo = self.cameraInfo
+        depthImage = self.depthImage
 
         centroid = self.readImageRGB(RGBimage)
         if centroid is not None:
@@ -195,8 +213,20 @@ class Kid:
         else:
             self.POIFound = False
 
+    def updateNavigation(self, currentTime):
         if self.POIFound:
-            self.lastPOIFound = currentTime
+            self.startPoint = self.posePoint
+            self.startOrientation = self.poseOrientation
+            self.axisRotationMatrix = [[cos(-self.poseOrientation), -sin(-self.poseOrientation)], [sin(-self.poseOrientation), cos(-self.poseOrientation)]]
+            self.translationVector = self.NO_TRANSLATION_VECTOR
+            self.rotationMatrix = self.NO_ROTATION_MATRIX
+            self.theta = 0
+            self.lastPOIFound = time.time()
+            # self.lastPOIFound = currentTime
+        elif currentTime - self.lastPOIFound < self.MAX_TIME_ELAPSED:
+            self.theta = self.poseOrientation - self.startOrientation
+            self.rotationMatrix = [[cos(self.theta), -sin(self.theta)], [sin(self.theta), cos(self.theta)]]
+            self.translationVector = (self.startPoint - self.posePoint).multiplyMatrix(self.axisRotationMatrix)
 
     def moveToColor(self, force):
         #B
@@ -210,8 +240,7 @@ class Kid:
         
         return vector
 
-    def wander(self): #TODO params
-        # return Vector2D()
+    def wander(self):
         #B
         currentTime = time.time()
         if currentTime-self.lastRandomField<self.RANDOM_FIELD_RATE:
@@ -244,7 +273,7 @@ class Kid:
             vector.setY(versorY)
 
         degree = math.atan2(vector.x, vector.y)
-        angularVelocity = degree/2.0 #max 1,57 radians per seconds (90° per seconds)
+        angularVelocity = degree/2.0 #max 1,57 radians per seconds (90 degrees per seconds)
         
         msg = Twist()
         
@@ -266,13 +295,14 @@ class Kid:
         #B
         #TODO manage objects position after movement
 
-    def feelForce(self, points):
+    def feelForce(self):
         #PS
+        points = self.sonarReadings
         del self.obstacles[:]
         i = 0
         for p in points:
             if i>7:
-                continue
+                break
             distance = sqrt((p.x)**2 + (p.y)**2)
             if distance<=self.RELIABLE_DISTANCE:
                 if distance<=self.OBSTACLE_DISTANCE:
@@ -282,10 +312,14 @@ class Kid:
 
     def readSonar(self, msg):
         #PS
-        if self.canRead:
-            points = msg.points
-            self.feelForce(points)
+        currentTime = time.time()
+        if currentTime-self.lastSonarReadTime<self.SONAR_UPDATE_RATE:
+            return
+        else:
+            self.lastSonarReadTime = currentTime
 
+        self.sonarReadings = msg.points
+            
     def updatePose(self, msg):
         #PS
         currentTime = time.time()
@@ -297,21 +331,8 @@ class Kid:
         pose = msg.pose.pose
         msgQuaternion = pose.orientation
         msgPoint = pose.position
-        point = Vector2D(msgPoint.y, msgPoint.x)
-        orientation = euler_from_quaternion([msgQuaternion.x, msgQuaternion.y, msgQuaternion.z, msgQuaternion.w])[2]
-
-        if self.POIFound:
-            self.startPoint = point
-            self.startOrientation = orientation
-            self.axisRotationMatrix = [[cos(-orientation), -sin(-orientation)], [sin(-orientation), cos(-orientation)]]
-            self.translationVector = Vector2D()
-            self.rotationMatrix = self.NO_ROTATION_MATRIX
-            self.theta = 0
-            # self.lastPOIFound = currentTime
-        elif currentTime - self.lastPOIFound < self.MAX_TIME_ELAPSED:
-            self.theta = orientation - self.startOrientation
-            self.rotationMatrix = [[cos(self.theta), -sin(self.theta)], [sin(self.theta), cos(self.theta)]]
-            self.translationVector = (self.startPoint - point).multiplyMatrix(self.axisRotationMatrix)
+        self.posePoint = Vector2D(msgPoint.y, msgPoint.x)
+        self.poseOrientation = euler_from_quaternion([msgQuaternion.x, msgQuaternion.y, msgQuaternion.z, msgQuaternion.w])[2]
 
 #    def listen(self, msg):
         #PS
