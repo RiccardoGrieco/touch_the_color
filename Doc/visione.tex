@@ -7,8 +7,7 @@ Il modulo di visione in questione prevede la realizzazione della seguente pipeli
 	\item calcolo del vettore in direzione del target
 \end{enumerate}
 \subsection{Acquisizione dello stream video}
-L'acquisizione dello stream video tramite camera RGB-D è stata realizzata mediante l'uso del framework open-source {\itshape OpenNI}, ideato per accedere alle informazioni registrate dalla camera con un livello di astrazione alto. In particolare, l'acquisizione dello stream video RGB è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/rgb/image\_rect\_color} mentre l'acquisizione dello stream video di profondità è stata realizzata attraverso la sottoscrizione al topic \\
-\texttt {/camera/depth\_registered/image}.
+L'acquisizione dello stream video tramite camera RGB-D è stata realizzata mediante l'uso del framework open-source {\itshape OpenNI}, ideato per accedere alle informazioni registrate dalla camera con un livello di astrazione alto. In particolare, l'acquisizione dello stream video RGB è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/rgb/image\_rect\_color} mentre l'acquisizione dello stream video di profondità è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/depth\_registered/image}.
 
 Siccome entrambi i topic forniscono informazioni mediante messaggi di tipo \texttt{sensor\_msgs/Image}, per permettere l'analisi tramite {\itshape OpenCV} è necessario convertire entrambi gli stream video nel formato \texttt {cv::Mat}. La suddetta conversione è stata realizzata mediante l'uso della libreria {\itshape CvBridge} con la seguente funzione di conversione
 \begin{center}
@@ -16,11 +15,14 @@ Siccome entrambi i topic forniscono informazioni mediante messaggi di tipo \text
 \end{center}
 dove per encoding sono stati utilizzati \texttt{bgr8} ed \texttt{32FC1} rispettivamente per la conversione dell'immagine RGB e di profondità.
 
-%immagini RGB e D
+\begin{figure}[htbp]
+	\begin{center}
+		\subfigure[Frame RGB\label{fig:RGBimg}]{\includegraphics[width=55mm]{images/1-RGB.png}}
+		\subfigure[Frame RGB\label{fig:depthImg}]{\includegraphics[width=55mm]{images/2-Depth.png}}
+	\end{center}
+\end{figure}
 
 Per agevolare l'analisi dei frame è stato effettuato un preprocessing dei frame RGB. Per ridurre il rumore presente è stato applicato un filtro gaussiano realizzato mediante l'uso di un kernel di dimensioni \texttt{3x3}. L'applicazione del suddetto filtro è stata ottenuta mediante l'uso della funzione \texttt{cv2.GaussianBlur()}.
-
-%immagine
 
 Essendo questa fase fortemente soggetta ad una discriminazione dei colori presenti nei frame, è stata effettuata una conversione dello spazio di colori da \texttt{RGB} a \texttt{HSV} mediante la funzione \texttt{cv2.cvtColor()}. Così facendo viene gestita in maniera più "naturale" la distinzione dei colori, in quanto nello spazio HSV la variazione dei colori è soggetta soltanto alla componente {\itshape Hue} a differenza dello spazio RGB, in cui un colore viene visto come una combinazione di rosso, giallo e blu.
 
@@ -33,9 +35,20 @@ Per realizzare tale selezione è stata utilizzata la funzione
 \end{center} 
 dove per \texttt{lower\_bound} ed \texttt{upper\_bound} sono stati inseriti gli estremi dell'intervallo associati al colore target. Dalla funzione viene ritornata una maschera il cui scopo è di isolare dal frame corrente soltanto le informazioni utili alla ricerca del blob.
 
+\begin{figure}[htbp]
+	\begin{center}
+		\subfigure[Maschera\label{fig:RGBimg}]{\includegraphics[width=55mm]{images/3-Mask.png}}
+	\end{center}
+\end{figure}
+
 Tuttavia la maschera evidenzia anche piccole porzioni di immagine che possono deviare la corretta ricerca del blob e che quindi costituiscono un rumore. Per eliminare gran parte di tale rumore è stata effettuata un'operazione di {\itshape erosione} tramite l'uso della funzione \texttt{cv2.erode()} seguita da un'operazione di {\itshape dilatazione} tramite l'uso della funzione \texttt{cv2.dilate()} utile a ristabilire le proporzioni delle componenti utili evidenziate dalla maschera.
 
-% immagini erosione dilatazione
+\begin{figure}[htbp]
+	\begin{center}
+		\subfigure[Erosione\label{fig:erosion}]{\includegraphics[width=55mm]{images/4-erode.png}}
+		\subfigure[Dilatazione\label{fig:dilatation}]{\includegraphics[width=55mm]{images/5-dilate.png}}
+	\end{center}
+\end{figure}
 
 Per tener traccia dei blob presenti nella scena, è stata utilizzata la funzione
 \begin{center}
@@ -43,14 +56,18 @@ Per tener traccia dei blob presenti nella scena, è stata utilizzata la funzione
 \end{center}
 dove \texttt{cv2.RETR\_EXTERNAL} indica che vengono estratti soltanto i contorni esterni (trascurando quindi i contorni innestati in altri), mentre \texttt{cv2.CHAIN\_APPROX\_SIMPLE} indica che viene realizzata un'ottimizzazione dello spazio necessario a memorizzare i contorni.
 
-Successivamente, per ogni blob, tramite la funzione \texttt{cv2.minEnclosingCircle()} viene estratto il raggio del cerchio di area minima che lo include. Così facendo è possibile rimuovere il rumore restante che non è stato eliminato in fase di erosione. Vengono considerati come validi soltanto i blob aventi raggio superiore ad una soglia fissata a priori.
+Successivamente, per ogni blob, tramite la funzione \texttt{cv2.minEnclosingCircle()} viene estratto il raggio del cerchio di area minima che lo include. Così facendo è possibile rimuovere il rumore restante che non è stato eliminato in fase di erosione. Vengono considerati come validi soltanto i blob aventi raggio superiore ad una soglia fissata apriori.
 
 Arrivati a questo punto, si ha a disposizione una lista di blob candidati alla ricerca del target valido da seguire. Viene quindi estratto il centroide di ogni blob mediante i {\itshape momenti dell'immagine} associati al contorno del blob ottenuti tramite la funzione \texttt{cv2.moments(contour)}. In particolare, le coordinate che identificano un centroide sono così espresse:
 \begin{center}
 	$C_x=\frac{M_{10}}{M_{00}}$, $C_y=\frac{M_{01}}{M_{00}}$
 \end{center}
 
-% immagine
+\begin{figure}[htbp]
+	\begin{center}
+		\subfigure[Blob selezionato\label{fig:RGBimg}]{\includegraphics[width=55mm]{images/6-final.png}}
+	\end{center}
+\end{figure}
 
 \subsection{Estrazione della profondità}
 Giunti a questa fase, si ha a disposizione una lista di centroidi rappresentanti i candidati per la scelta del target da seguire. L'idea è di considerare come target il centroide avente distanza minima dalla camera. Per realizzare tale operazione viene utilizzata la componente di profondità processata dalla camera RGB-D.
