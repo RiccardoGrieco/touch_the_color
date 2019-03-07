@@ -56,9 +56,9 @@ Per tener traccia dei blob presenti nella scena, è stata utilizzata la funzione
 \end{center}
 dove \texttt{cv2.RETR\_EXTERNAL} indica che vengono estratti soltanto i contorni esterni (trascurando quindi i contorni innestati in altri), mentre \texttt{cv2.CHAIN\_APPROX\_SIMPLE} indica che viene realizzata un'ottimizzazione dello spazio necessario a memorizzare i contorni.
 
-Successivamente, per ogni blob, tramite la funzione \texttt{cv2.minEnclosingCircle()} viene estratto il raggio del cerchio di area minima che lo include. Così facendo è possibile rimuovere il rumore restante che non è stato eliminato in fase di erosione. Vengono considerati come validi soltanto i blob aventi raggio superiore ad una soglia fissata apriori.
+Successivamente viene selezionato il blob avente area maggiore e, tramite la funzione \texttt{cv2.minEnclosingCircle()}, viene estratto il raggio del cerchio di area minima che lo include. Il blob in questione viene considerato valido soltanto se avente raggio superiore ad una soglia fissata apriori.
 
-Arrivati a questo punto, si ha a disposizione una lista di blob candidati alla ricerca del target valido da seguire. Viene quindi estratto il centroide di ogni blob mediante i {\itshape momenti dell'immagine} associati al contorno del blob ottenuti tramite la funzione \texttt{cv2.moments(contour)}. In particolare, le coordinate che identificano un centroide sono così espresse:
+Arrivati a questo punto, viene estratto il centroide mediante i {\itshape momenti dell'immagine} associati al contorno del blob tramite la funzione \texttt{cv2.moments(contour)}. In particolare, le coordinate che identificano il centroide sono così espresse:
 \begin{center}
 	$C_x=\frac{M_{10}}{M_{00}}$, $C_y=\frac{M_{01}}{M_{00}}$
 \end{center}
@@ -70,12 +70,12 @@ Arrivati a questo punto, si ha a disposizione una lista di blob candidati alla r
 \end{figure}
 
 \subsection{Estrazione della profondità}
-Giunti a questa fase, si ha a disposizione una lista di centroidi rappresentanti i candidati per la scelta del target da seguire. L'idea è di considerare come target il centroide avente distanza minima dalla camera. Per realizzare tale operazione viene utilizzata la componente di profondità processata dalla camera RGB-D.
+Giunti a questa fase, si ha a disposizione il centroide rappresentante il target da seguire. Possiamo quindi estrarre la distanza del blob dalla camera utilizzando la componente di profondità processata dalla camera RGB-D.
 
-L'immagine di profondità a disposizione è nel formato \texttt{cv::Mat}, quindi per accedere alla distanza associata ad ogni singolo pixel è sufficiente estrarre dall'immagine la componente $(C_x,C_y)$. Così facendo si otterrà un valore in {\itshape floating point} a 32 bit rappresentante la distanza in metri del punto osservato nel pixel dalla camera.
+L'immagine di profondità a disposizione è nel formato \texttt{cv::Mat}, quindi per accedere alla distanza al centroide del blob è sufficiente estrarre dall'immagine la componente $(C_x,C_y)$. Così facendo si otterrà un valore in {\itshape floating point} a 32 bit rappresentante la distanza in metri del punto osservato nel pixel dalla camera.
 
 \subsection{Calcolo della direzione da seguire}
-Per ottenere il vettore in direzione del target, è stato utilizzato il raggio uscente dalla camera ed entrante nel pixel che costituisce il centroide del target.\newline
+Per ottenere il vettore in direzione del target è stato utilizzato il raggio uscente dalla camera ed entrante nel pixel che costituisce il centroide del target.\newline
 Essendo l'immagine ottenuta per proiezione prospettica della scena visualizzata dalla camera su di un piano di proiezione, il raggio ottenuto potrà essere considerato valido per la generazione del vettore direzionale che vogliamo realizzare.
 
 È stato utilizzato quindi il modello della {\itshape Pin-hole camera} per elaborare le informazioni associate alla Kinect ed estrarre il raggio in questione. Tali informazioni vengono estratte dal topic \texttt{/camera/depth\_registered/camera\_info} sottoforma di messaggio \texttt{sensor\_msgs/CameraInfo}.
