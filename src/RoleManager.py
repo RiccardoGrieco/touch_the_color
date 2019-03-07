@@ -191,6 +191,7 @@ class RoleManager:
                         break
             except Exception as e:
                 print(str(e))
+                exit(1)
                 break
         threadSocket.shutdown(socket.SHUT_RDWR)
         threadSocket.close()

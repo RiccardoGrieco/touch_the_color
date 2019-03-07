@@ -60,7 +60,7 @@ class Kid:
         self.startOrientation = 0.0
         self.translationVector = Vector2D()
         self.startPoint = Vector2D()
-        self.teta = 0.0
+        self.theta = 0.0
         self.rotationMatrix = self.NO_ROTATION_MATRIX
         self.POI = Vector2D()
 
@@ -240,10 +240,10 @@ class Kid:
         msg = Twist()
         
         linearVelocity = vector.y/4.0
-        if linearVelocity<=0.0001 : #TODO abs(linearVelocity to admit backwards movement
+        if linearVelocity<=0.0001 : #TODO abs(linearVelocity) to admit backwards movement
             linearVelocity = 0.0
 
-        if abs(degree)<=self.ANGULAR_THRESHOLD or pi+self.ANGULAR_THRESHOLD<=abs(degree)<=pi-self.ANGULAR_THRESHOLD:
+        if abs(degree)<=self.ANGULAR_THRESHOLD or pi-self.ANGULAR_THRESHOLD<=abs(degree)<=pi+self.ANGULAR_THRESHOLD:
             angularVelocity = 0.0
 
         msg.linear.x = linearVelocity
@@ -295,15 +295,14 @@ class Kid:
             self.startPoint = point
             self.startOrientation = orientation
             self.axisRotationMatrix = [[cos(-orientation), -sin(-orientation)], [sin(-orientation), cos(-orientation)]]
-            self.startPoint = point.multiplyMatrix(self.axisRotationMatrix)
             self.translationVector = Vector2D()
             self.rotationMatrix = self.NO_ROTATION_MATRIX
-            self.teta = 0
+            self.theta = 0
             # self.lastPOIFound = currentTime
         elif currentTime - self.lastPOIFound < self.MAX_TIME_ELAPSED:
-            self.teta = orientation - self.startOrientation
-            self.rotationMatrix = [[cos(self.teta), -sin(self.teta)], [sin(self.teta), cos(self.teta)]]
-            self.translationVector = self.startPoint - point.multiplyMatrix(self.axisRotationMatrix)
+            self.theta = orientation - self.startOrientation
+            self.rotationMatrix = [[cos(self.theta), -sin(self.theta)], [sin(self.theta), cos(self.theta)]]
+            self.translationVector = (self.startPoint - point).multiplyMatrix(self.axisRotationMatrix)
 
 #    def listen(self, msg):
         #PS

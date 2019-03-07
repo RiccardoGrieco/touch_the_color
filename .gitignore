@@ -4,3 +4,8 @@ src/Vector2D.pyc
 src/util/Colors.pyc
 src/util/__pycache__/Vector2D.cpython-36.pyc
 src/util/__pycache__/__init__.cpython-36.pyc
+Doc/main.pdf
+Doc/main.log
+Doc/main.aux
+Doc/main.toc
+Doc/main.synctex.gz
