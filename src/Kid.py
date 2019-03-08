@@ -17,7 +17,7 @@ from math import sqrt, pi, cos, sin
 from random import random
 from std_msgs.msg import String
 from sensor_msgs.msg import PointCloud, Image, CameraInfo
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point32
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 
@@ -144,7 +144,6 @@ class Kid:
             continue
 
         while self.inGame and not rospy.is_shutdown():
-            self.canRead = False
             self.look()
             self.feelForce()
             fieldVector = self.wander()
@@ -153,7 +152,6 @@ class Kid:
             if self.avoidReleaser:
                 fieldVector = self.avoid(fieldVector)
                 self.avoidReleaser = False
-            self.canRead = True
             self.move(fieldVector)
             rate_start.sleep()
 
@@ -304,16 +302,22 @@ class Kid:
         #PS
         points = self.sonarReadings
         del self.obstacles[:]
+        points.append(Point32(None, None)) # handle pioneers with 8 sonars
         i = 0
-        for p in points:
-            if i>7:
-                break
-            distance = sqrt((p.x)**2 + (p.y)**2)
-            if distance<=self.RELIABLE_DISTANCE:
-                if distance<=self.OBSTACLE_DISTANCE:
-                    self.avoidReleaser = True
-                    self.obstacles.append(Vector2D(p.y,p.x))
-            i = i+1
+        points[8].x = 50
+        while i<8:
+            p1 = points[i]
+            distance1 = sqrt((p1.x)**2 + (p1.y)**2)
+            if distance1>self.OBSTACLE_DISTANCE:
+                i = i+1
+                continue
+            p2 = points[i+1]
+            distance2 = sqrt((p2.x)**2 + (p2.y)**2)
+            if distance2<distance1:
+                p1 = p2
+            self.obstacles.append(Vector2D(p1.y,p1.x))
+            self.avoidReleaser = True
+            i = i+2
 
     def readSonar(self, msg):
         #PS
