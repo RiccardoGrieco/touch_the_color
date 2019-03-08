@@ -30,6 +30,7 @@ class Kid:
     COLOR_TOUCHED_DISTANCE = 0.65
     MIN_ATTRACTION_DISTANCE = 4.5
     MIN_ATTRACTION_FORCE = 0.7
+    SUPPORT_POINT = Point32()
 
     # time and rate constants in seconds
     MAX_TIME_ELAPSED = 100#TODO 60?
@@ -178,8 +179,8 @@ class Kid:
     def lookForPOI(self, currentTime):
         frameRGBD = self.frameRGBD
         RGBimage = frameRGBD[0]
-        cameraInfo = frameRGBD[1]
-        depthImage = frameRGBD[2]
+        depthImage = frameRGBD[1]
+        cameraInfo = frameRGBD[2]
 
         centroid = self.readImageRGB(RGBimage)
         if centroid is not None:
@@ -302,7 +303,7 @@ class Kid:
         #PS
         points = self.sonarReadings
         del self.obstacles[:]
-        points.append(Point32(None, None)) # handle pioneers with 8 sonars
+        points.append(self.SUPPORT_POINT) # handle pioneers with 8 sonars
         i = 0
         points[8].x = 50
         while i<8:

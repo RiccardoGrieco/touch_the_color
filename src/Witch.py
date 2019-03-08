@@ -26,7 +26,7 @@ class Witch:
 
     def chooseColor(self):
         # colorIndex = randint(0, len(Colors.colorNames) - 1)
-        colorIndex = 5 #TODO: temporaneo, da togliere
+        colorIndex = Colors.colorNames.index("MAGENTA")#TODO: temporaneo, da togliere
         return Colors.colorNames[colorIndex]
 
     def ownRoleManagerSpeaker(self, typeOfMsg, color):
