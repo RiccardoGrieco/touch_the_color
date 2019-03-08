@@ -88,6 +88,9 @@ class Kid:
         # Needed to interpretate images geometrically with camera parameters
         self.camera_model = image_geometry.PinholeCameraModel()
 
+        self.frameRGBD = None
+        self.poseInfo = None
+
         # publishers and subscribers
         self.velPub = rospy.Publisher("/RosAria/cmd_vel", Twist, queue_size=1)
         self.sonarSub = rospy.Subscriber("/RosAria/sonar", PointCloud, self.readSonar)
@@ -137,6 +140,9 @@ class Kid:
         while not self.inGame and not rospy.is_shutdown():
             time.sleep(0.5)
 
+        while self.poseInfo is None or self.frameRGBD is None:
+            continue
+
         while self.inGame and not rospy.is_shutdown():
             self.canRead = False
             self.look()
@@ -158,11 +164,11 @@ class Kid:
             self.ownRoleManagerSpeaker(0)
 
     def RGBDSubscriber(self, RGBimage, depthImage, cameraInfo):
-        currentTime = time.time()
-        if not self.inGame or currentTime-self.lastLookUpdateTime<self.LOOK_UPDATE_RATE:
-            return
-        else:
-            self.lastLookUpdateTime = currentTime
+        #currentTime = time.time()
+        #if not self.inGame or currentTime-self.lastLookUpdateTime<self.LOOK_UPDATE_RATE:
+        #    return
+        #else:
+        #    self.lastLookUpdateTime = currentTime
         
         self.frameRGBD = (RGBimage, depthImage, cameraInfo)
 
@@ -311,21 +317,21 @@ class Kid:
 
     def readSonar(self, msg):
         #PS
-        currentTime = time.time()
-        if currentTime-self.lastSonarReadTime<self.SONAR_UPDATE_RATE:
-            return
-        else:
-            self.lastSonarReadTime = currentTime
+        #currentTime = time.time()
+        #if currentTime-self.lastSonarReadTime<self.SONAR_UPDATE_RATE:
+        #    return
+        #else:
+        #    self.lastSonarReadTime = currentTime
 
         self.sonarReadings = msg.points
             
     def updatePose(self, msg):
         #PS
-        currentTime = time.time()
-        if currentTime-self.lastPoseUpdateTime<self.POSE_UPDATE_RATE:
-            return
-        else:
-            self.lastPoseUpdateTime = currentTime
+        #currentTime = time.time()
+        #if currentTime-self.lastPoseUpdateTime<self.POSE_UPDATE_RATE:
+        #    return
+        #else:
+        #    self.lastPoseUpdateTime = currentTime
 
         pose = msg.pose.pose
         msgQuaternion = pose.orientation
