@@ -164,9 +164,7 @@ class Kid:
         else:
             self.lastLookUpdateTime = currentTime
         
-        self.RGBimage = RGBimage
-        self.depthImage = depthImage
-        self.cameraInfo = cameraInfo
+        self.frameRGBD = (RGBimage, depthImage, cameraInfo)
 
     def look(self):
         currentTime = time.time()
@@ -174,12 +172,10 @@ class Kid:
         self.updateNavigation(currentTime)  # update navigation to POI information
 
     def lookForPOI(self, currentTime):
-        #TODO     
-        # try to avoid synchronization with subscriber problems
-        # should actually use a structure that encapsulate all of them
-        RGBimage = self.RGBimage
-        cameraInfo = self.cameraInfo
-        depthImage = self.depthImage
+        frameRGBD = self.frameRGBD
+        RGBimage = frameRGBD[0]
+        cameraInfo = frameRGBD[1]
+        depthImage = frameRGBD[2]
 
         centroid = self.readImageRGB(RGBimage)
         if centroid is not None:
@@ -214,19 +210,22 @@ class Kid:
             self.POIFound = False
 
     def updateNavigation(self, currentTime):
+        poseInfo = self.poseInfo
+        posePoint = poseInfo[0]
+        poseOrientation = poseInfo[1]
         if self.POIFound:
-            self.startPoint = self.posePoint
-            self.startOrientation = self.poseOrientation
-            self.axisRotationMatrix = [[cos(-self.poseOrientation), -sin(-self.poseOrientation)], [sin(-self.poseOrientation), cos(-self.poseOrientation)]]
+            self.startPoint = posePoint
+            self.startOrientation = poseOrientation
+            self.axisRotationMatrix = [[cos(-poseOrientation), -sin(-poseOrientation)], [sin(-poseOrientation), cos(-poseOrientation)]]
             self.translationVector = self.NO_TRANSLATION_VECTOR
             self.rotationMatrix = self.NO_ROTATION_MATRIX
             self.theta = 0
             self.lastPOIFound = time.time()
             # self.lastPOIFound = currentTime
         elif currentTime - self.lastPOIFound < self.MAX_TIME_ELAPSED:
-            self.theta = self.poseOrientation - self.startOrientation
+            self.theta = poseOrientation - self.startOrientation
             self.rotationMatrix = [[cos(self.theta), -sin(self.theta)], [sin(self.theta), cos(self.theta)]]
-            self.translationVector = (self.startPoint - self.posePoint).multiplyMatrix(self.axisRotationMatrix)
+            self.translationVector = (self.startPoint - posePoint).multiplyMatrix(self.axisRotationMatrix)
 
     def moveToColor(self, force):
         #B
@@ -331,8 +330,8 @@ class Kid:
         pose = msg.pose.pose
         msgQuaternion = pose.orientation
         msgPoint = pose.position
-        self.posePoint = Vector2D(msgPoint.y, msgPoint.x)
-        self.poseOrientation = euler_from_quaternion([msgQuaternion.x, msgQuaternion.y, msgQuaternion.z, msgQuaternion.w])[2]
+
+        self.poseInfo = (Vector2D(msgPoint.y, msgPoint.x), euler_from_quaternion([msgQuaternion.x, msgQuaternion.y, msgQuaternion.z, msgQuaternion.w])[2])
 
 #    def listen(self, msg):
         #PS
