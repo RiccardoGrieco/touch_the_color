@@ -1,13 +1,14 @@
-Il modulo inerente agli aspetti di computer vision del progetto in esame è stato realizzato mediante l'uso di una telecamera RGB-D, in particolare tramite una {\itshape Microsoft Kinect}, il cui stream video è stato processato con l'ausilio dell'API {\itshape OpenCV}.\newline
+Il modulo inerente agli aspetti di computer vision è stato realizzato mediante l'uso di una telecamera RGB-D, in particolare tramite una {\itshape Microsoft Kinect}, il cui stream video è stato processato con l'ausilio dell'API {\itshape OpenCV}.\newline
 Il modulo di visione in questione prevede la realizzazione della seguente pipeline:
 \begin{enumerate}
-	\item acquisizione dello stream video RGB e di profondità e conversione dello spazio di colore da RGB a HSV
-	\item ricerca di uno o più blob del colore target associato alla sessione corrente
-	\item estrazione del valore di profondità associato ai centroidi dei blob trovati e determinazione del target
-	\item calcolo del vettore in direzione del target
+	\item acquisizione dello stream video RGB e di profondità e conversione dello spazio di colore da RGB a HSV;
+	\item ricerca di uno o più blob del colore target associato alla sessione corrente;
+	\item estrazione del valore di profondità associato ai centroidi dei blob trovati e determinazione del target;
+	\item calcolo del vettore in direzione del target.
 \end{enumerate}
 \subsection{Acquisizione dello stream video}
-L'acquisizione dello stream video tramite camera RGB-D è stata realizzata mediante l'uso del framework open-source {\itshape OpenNI}, ideato per accedere alle informazioni registrate dalla camera con un livello di astrazione alto. In particolare, l'acquisizione dello stream video RGB è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/rgb/image\_rect\_color} mentre l'acquisizione dello stream video di profondità è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/depth\_registered/image}.
+L'acquisizione dello stream video tramite camera RGB-D è stata realizzata mediante l'uso del framework open-source {\itshape OpenNI}, ideato per accedere alle informazioni registrate dalla camera con un livello di astrazione alto. In particolare, l'acquisizione dello stream video RGB è stata realizzata attraverso la sottoscrizione al topic \texttt {/camera/rgb/image\_rect\_color} mentre l'acquisizione dello stream video di profondità è stata realizzata attraverso la sottoscrizione al topic \\
+\texttt {/camera/depth\_registered/image}.
 
 Siccome entrambi i topic forniscono informazioni mediante messaggi di tipo \texttt{sensor\_msgs/Image}, per permettere l'analisi tramite {\itshape OpenCV} è necessario convertire entrambi gli stream video nel formato \texttt {cv::Mat}. La suddetta conversione è stata realizzata mediante l'uso della libreria {\itshape CvBridge} con la seguente funzione di conversione
 \begin{center}

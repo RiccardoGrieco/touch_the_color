@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.12.8)  6 MAR 2019 09:43
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.12.8)  19 MAR 2019 15:43
 entering extended mode
 **./main.tex
 (main.tex
@@ -173,21 +173,55 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
 \mathdisplay@stack=\toks23
 LaTeX Info: Redefining \[ on input line 2817.
 LaTeX Info: Redefining \] on input line 2818.
-) (main.aux)
+)
+(C:\Users\matar\AppData\Roaming\MiKTeX\2.9\tex\latex\subfigure\subfigure.sty
+Package: subfigure 2002/07/30 v2.1.4 subfigure package
+\subfigtopskip=\skip46
+\subfigcapskip=\skip47
+\subfigcaptopadj=\dimen122
+\subfigbottomskip=\skip48
+\subfigcapmargin=\dimen123
+\subfiglabelskip=\skip49
+\c@subfigure=\count103
+\c@lofdepth=\count104
+\c@subtable=\count105
+\c@lotdepth=\count106
+
+****************************************
+* Local config file subfigure.cfg used *
+****************************************
+(C:\Users\matar\AppData\Roaming\MiKTeX\2.9\tex\latex\subfigure\subfigure.cfg)
+\subfig@top=\skip50
+\subfig@bottom=\skip51
+)
+(main.aux
+
+LaTeX Warning: Label `fig:RGBimg' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:RGBimg' multiply defined.
+
+
+LaTeX Warning: Label `fig:RGBimg' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:RGBimg' multiply defined.
+
+)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -225,16 +259,16 @@ LaTeX Font Info:    ... okay on input line 12.
 
 (C:\Users\matar\AppData\Roaming\MiKTeX\2.9\tex\context\base\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count103
-\scratchdimen=\dimen122
+\scratchcounter=\count107
+\scratchdimen=\dimen124
 \scratchbox=\box28
-\nofMPsegments=\count104
-\nofMParguments=\count105
+\nofMPsegments=\count108
+\nofMParguments=\count109
 \everyMPshowfont=\toks24
-\MPscratchCnt=\count106
-\MPscratchDim=\dimen123
-\MPnumerator=\count107
-\makeMPintoPDFobject=\count108
+\MPscratchCnt=\count110
+\MPscratchDim=\dimen125
+\MPnumerator=\count111
+\makeMPintoPDFobject=\count112
 \everyMPtoPDFconversion=\toks25
 ) ("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\epstopdf-base.sty"
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
@@ -313,55 +347,167 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \openout3 = `main.toc'.
 
  [2] (intro.tex
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 12.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 15.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 12.
- [3]) [4] [5]
-(comunicazione.tex [6]
-<images/CommunicationProtocol.png, id=31, 337.26pt x 390.45876pt>
-File: images/CommunicationProtocol.png Graphic file (type png)
-<use images/CommunicationProtocol.png>
-Package pdftex.def Info: images/CommunicationProtocol.png  used on input line 3
-3.
-(pdftex.def)             Requested size: 298.75264pt x 345.88664pt.
-) [7 <./images/CommunicationProtocol.png>] (visione.tex
-[8] [9]
-Overfull \hbox (1.4917pt too wide) in paragraph at lines 58--59
-\OT1/cmr/m/n/12 cedere alla dis-tanza as-so-ci-ata ad ogni sin-golo pixel e su
-f-fi-ciente es-trarre dall'immagine
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 15.
+ [3]
+
+pdfTeX warning: pdflatex.exe (file ./images/stregabeh.pdf): PDF inclusion: foun
+d PDF version <1.7>, but at most version <1.5> allowed
+<images/stregabeh.pdf, id=21, 845.07724pt x 597.55246pt>
+File: images/stregabeh.pdf Graphic file (type pdf)
+<use images/stregabeh.pdf>
+Package pdftex.def Info: images/stregabeh.pdf  used on input line 41.
+(pdftex.def)             Requested size: 384.1096pt x 271.60414pt.
+
+
+pdfTeX warning: pdflatex.exe (file ./images/bambinobeh.pdf): PDF inclusion: fou
+nd PDF version <1.7>, but at most version <1.5> allowed
+<images/bambinobeh.pdf, id=22, 845.07724pt x 597.55246pt>
+File: images/bambinobeh.pdf Graphic file (type pdf)
+<use images/bambinobeh.pdf>
+Package pdftex.def Info: images/bambinobeh.pdf  used on input line 49.
+(pdftex.def)             Requested size: 384.1096pt x 271.60414pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+) [4 <./images/stregabeh.pdf>] [5 <./images/bambinobeh.pdf>] (navigazione.tex
+<images/repulsionplot.pdf, id=55, 462.52798pt x 346.89601pt>
+File: images/repulsionplot.pdf Graphic file (type pdf)
+<use images/repulsionplot.pdf>
+Package pdftex.def Info: images/repulsionplot.pdf  used on input line 18.
+(pdftex.def)             Requested size: 298.75264pt x 224.07703pt.
+
+Overfull \hbox (17.71098pt too wide) in paragraph at lines 10--22
+\OT1/cmr/m/n/12 Le forze es-erci-tate dai campi di poten-ziale hanno per con-ve
+n-zione in-ten-sita nell'intervallo
  []
 
 
-Overfull \hbox (3.16342pt too wide) in paragraph at lines 64--67
+Underfull \hbox (badness 10000) in paragraph at lines 10--22
+
+ []
+
+[6
+
+ <./images/repulsionplot.pdf>]
+<images/attractionplot.pdf, id=76, 462.52798pt x 346.89601pt>
+File: images/attractionplot.pdf Graphic file (type pdf)
+<use images/attractionplot.pdf>
+Package pdftex.def Info: images/attractionplot.pdf  used on input line 33.
+(pdftex.def)             Requested size: 298.75264pt x 224.07703pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 27--37
+
+ []
+
+[7 <./images/attractionplot.pdf>]
+Overfull \hbox (8.14996pt too wide) in paragraph at lines 47--53
+\OT1/cmr/m/n/12 Questo sis-tema rende molto facile l'utilizzo dei campi di pote
+n-ziale per l'individuazione
+ []
+
+
+Overfull \hbox (7.90645pt too wide) in paragraph at lines 47--53
+\OT1/cmr/m/n/12 di un vet-tore che de-ter-mini il movi-mento del robot. Un prob
+-lema che sorge dall'utilizzo
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 64--65
+
+ []
+
+[8] [9]
+
+LaTeX Warning: Command \textdegree invalid in math mode on input line 80.
+
+) [10] (comunicazione.tex [11]
+<images/CommunicationProtocol.png, id=114, 337.26pt x 390.45876pt>
+File: images/CommunicationProtocol.png Graphic file (type png)
+<use images/CommunicationProtocol.png>
+Package pdftex.def Info: images/CommunicationProtocol.png  used on input line 3
+2.
+(pdftex.def)             Requested size: 298.75264pt x 345.88664pt.
+) [12 <./images/CommunicationProtocol.png>]
+(visione.tex
+<images/1-RGB.png, id=119, 483.30562pt x 362.10281pt>
+File: images/1-RGB.png Graphic file (type png)
+<use images/1-RGB.png>
+Package pdftex.def Info: images/1-RGB.png  used on input line 21.
+(pdftex.def)             Requested size: 156.49014pt x 117.24551pt.
+<images/2-Depth.png, id=120, 483.30562pt x 361.35pt>
+File: images/2-Depth.png Graphic file (type png)
+<use images/2-Depth.png>
+Package pdftex.def Info: images/2-Depth.png  used on input line 22.
+(pdftex.def)             Requested size: 156.49014pt x 117.00177pt.
+ [13]
+<images/3-Mask.png, id=125, 482.55281pt x 361.35pt>
+File: images/3-Mask.png Graphic file (type png)
+<use images/3-Mask.png>
+Package pdftex.def Info: images/3-Mask.png  used on input line 41.
+(pdftex.def)             Requested size: 156.49014pt x 117.18372pt.
+ [14 <./images/1-RGB.png> <./images/2-Depth.png> <./images/3-Mask.png>]
+<images/4-erode.png, id=133, 482.55281pt x 362.10281pt>
+File: images/4-erode.png Graphic file (type png)
+<use images/4-erode.png>
+Package pdftex.def Info: images/4-erode.png  used on input line 49.
+(pdftex.def)             Requested size: 156.49014pt x 117.42784pt.
+<images/5-dilate.png, id=134, 481.8pt x 361.35pt>
+File: images/5-dilate.png Graphic file (type png)
+<use images/5-dilate.png>
+Package pdftex.def Info: images/5-dilate.png  used on input line 50.
+(pdftex.def)             Requested size: 156.49014pt x 117.36568pt.
+
+Overfull \hbox (18.10356pt too wide) in paragraph at lines 62--63
+[]\OT1/cmr/m/n/12 Arrivati a questo punto, viene es-tratto il cen-troide me-di-
+ante i \OT1/cmr/m/it/12 mo-menti dell'immagine
+ []
+
+<images/6-final.png, id=135, 482.55281pt x 362.10281pt>
+File: images/6-final.png Graphic file (type png)
+<use images/6-final.png>
+Package pdftex.def Info: images/6-final.png  used on input line 69.
+(pdftex.def)             Requested size: 156.49014pt x 117.42784pt.
+[15 <./images/4-erode.png> <./images/5-dilate.png>]
+Overfull \hbox (3.16342pt too wide) in paragraph at lines 82--85
 \OT1/cmr/m/n/12 ante l'uso dell'oggetto \OT1/cmtt/m/n/12 PinholeCameraModel \OT
 1/cmr/m/n/12 con-tenuto nella li-bre-ria \OT1/cmtt/m/n/12 image[]geometry
  []
 
-) [10] [11] (main.aux) ) 
+) [16 <./images/6-final.png>] [17] [18] (main.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3402 strings out of 492970
- 45301 string characters out of 3135855
- 121419 words of memory out of 3000000
- 7197 multiletter control sequences out of 15000+200000
+ 3627 strings out of 492970
+ 49082 string characters out of 3135855
+ 123084 words of memory out of 3000000
+ 7403 multiletter control sequences out of 15000+200000
  10917 words of font info for 41 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,6n,35p,1447b,229s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfont
-s/cm/cmbx12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmm
-i12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi8.pfb><
-C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Progra
-m Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files/M
-iKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files/MiKTeX 2.9/
-fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/ty
-pe1/public/amsfonts/cm/cmti12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/publ
-ic/amsfonts/cm/cmtt12.pfb>
-Output written on main.pdf (11 pages, 183420 bytes).
+ 41i,8n,35p,1450b,305s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Pr
+ogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Fi
+les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Program Files/MiKT
+eX 2.9/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Program Files/MiKTeX 2.9/fo
+nts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1
+/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/a
+msfonts/cm/cmr12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/c
+m/cmr17.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pf
+b><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Prog
+ram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program File
+s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Program Files/MiKTeX 
+2.9/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Program Files/MiKTeX 2.9/font
+s/type1/public/amsfonts/cm/cmtt12.pfb>
+Output written on main.pdf (18 pages, 2109916 bytes).
 PDF statistics:
- 80 PDF objects out of 1000 (max. 8388607)
+ 196 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 66 words of extra memory for PDF output out of 10000 (max. 10000000)
 
