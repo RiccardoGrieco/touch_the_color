@@ -35,7 +35,7 @@ class Kid:
     MAX_TIME_ELAPSED = 60
     POSE_UPDATE_RATE = 0.25 
     RANDOM_FIELD_RATE = 10
-    LOOK_UPDATE_RATE = 0.10
+    LOOK_UPDATE_RATE = 0.5
     SONAR_UPDATE_RATE = 0.10
 
     # angular constants 
@@ -174,7 +174,7 @@ class Kid:
     def look(self):
         currentTime = time.time()
         self.updateNavigation(currentTime)
-        if currentTime-self.lastLoop > 0.5:
+        if currentTime-self.lastLoop > self.LOOK_UPDATE_RATE:
             self.lookForPOI(currentTime)        # process camera image
             self.lastLoop = currentTime
 
