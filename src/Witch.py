@@ -15,10 +15,10 @@ class Witch:
         self.noWinners = 0  # when it's noTotKids-1 than the game ends
         self.noTotKids = 0
 
-        # TODO gestire queste bestiole qui
         self.RMSpeakerPub = rospy.Publisher("node_to_rolemanager", String, queue_size=10)
         self.RMListenerSub = rospy.Subscriber("rolemanager_to_node", String, self.ownRoleManagerListener)
 
+    def start(self):
         color = self.chooseColor()
         self.ownRoleManagerSpeaker(0, color)
 
@@ -26,7 +26,7 @@ class Witch:
 
     def chooseColor(self):
         # colorIndex = randint(0, len(Colors.colorNames) - 1)
-        colorIndex = 5 #TODO: temporaneo, da togliere
+        colorIndex = Colors.colorNames.index("LIGHT GREEN")     # TODO: temporaneo, da togliere
         return Colors.colorNames[colorIndex]
 
     def ownRoleManagerSpeaker(self, typeOfMsg, color):
@@ -63,11 +63,6 @@ class Witch:
             print("leggo topic: " + "noTotKids = " + msg)
             self.noTotKids = int(msg[2:])
 
-    def listen(self, msg):
-        #PS
-        #TODO listen behaviour
-        i = 0
-
     def determineEndGame(self):
         """
         Test if the game ends.
@@ -76,7 +71,7 @@ class Witch:
 
         print("noWinners: " + str(self.noWinners) + ", noTotKids: " + str(self.noTotKids))
 
-        # TODO cambia
+        # TODO scegliere come determinare la fine del gioco
         # if self.noWinners == self.noTotKids - 1:    # end-game test
         if self.noWinners == self.noTotKids:
             print("ho determinato la fine del gioco")
@@ -85,21 +80,14 @@ class Witch:
             print("colore toccato ma la partita non e' finita")
             return False
 
-    def communicateLoser(self):
-        #MS
-        #TODO broadcast
-        i = 0
-
-    def config(self,*args):
-        #TODO *args
-        #TODO init function (if needed)
-        i = 0
-
-    def mainLoop(self):
-        #TODO mainLoop
-        i = 0
-
 
 if __name__ == "__main__":
-    rb = Witch()
+    try:
+        robot = Witch()
+
+        robot.start()
+    except rospy.ROSInterruptException:
+        print("ROSInterruptException")
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt")
 
