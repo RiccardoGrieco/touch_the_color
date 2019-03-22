@@ -1,4 +1,4 @@
-Per la navigazione del robot, in particolare del robot \textit{Kid}, è stato utilizzato un approccio misto che utilizza sussunzione e metodologia a campi di potenziale.
+Per la navigazione dei robot, in particolare del robot \textit{Kid}, è stato utilizzato un approccio misto che utilizza sussunzione e metodologia a campi di potenziale.
 
 \subsection{Campi di potenziale}
 	I campi previsti dall'architettura sono i seguenti:
@@ -25,7 +25,7 @@ Per la navigazione del robot, in particolare del robot \textit{Kid}, è stato uti
 		$avoid(d) = b^{-c (d-D_S)} $
 	\end{center}
 	dove $d$ è la distanza del robot dall'oggetto, $b$ e $c$ sono fattori che determinano il comportamento della curva e $D_S$ è una distanza di sicurezza, fissata a priori.
-	Il campo viene percepito solo quando la distanza dall'oggetto è di almeno 1 metro.
+	Il campo viene percepito solo quando la distanza dall'oggetto è di almeno 1 metro e solo se rilevato dagli otto sonar anteriori (0-7).
 	La Figura~\ref{fig:repulsion_plot} evidenzia come la forza esercitata dal campo abbia intensità massima quando l'oggetto si trova ad una distanza vicina quella di sicurezza e minima al limite della percezione del campo.\\ \\
 	%Plot del campo Move to Goal
 	\begin{figure}[h!]
@@ -45,7 +45,7 @@ Per la navigazione del robot, in particolare del robot \textit{Kid}, è stato uti
 
 \subsection{Orientamento}
 	Il sistema di coordinate utilizzato è robocentrico, ovvero ogni punto rilevante (ostacoli, punto di interesse) nello spazio è individuato da coordinate ottenute dalle misurazioni dei sensori che il robot utilizza.\newline Questo sistema rende molto facile l'utilizzo dei campi di potenziale per l'individuazione di un vettore che determini il movimento del robot.
-	Un problema che sorge dall'utilizzo di questo sistema è quello di gestire punti di cui non si hanno più rilevazioni dai sensori. Nel caso specifico del robot Kid, se esso non ha più visibilità del POI che cerca di raggiungere, ad esempio perché si è dovuto girare per evitare un'ostacolo, dovrebbe comunque poter stimare la posizione dell'oggetto.
+	Un problema che sorge dall'utilizzo di questo sistema è quello della gestione dei punti di cui non si hanno più rilevazioni dai sensori. Nel caso specifico del robot Kid, se esso non ha più visibilità del POI che cerca di raggiungere, ad esempio perché si è dovuto girare per evitare un'ostacolo, deve comunque poter stimare la posizione dell'oggetto.
 	Per fare ciò è necessario memorizzare lo spostamento e la rotazione effettuati dal sistema di riferimento rispetto all'ultima volta in cui tale oggetto è stato rilevato.
 	Ottenere questi dati è possibile grazie all'utilizzo dell'interfaccia RosAria per la gestione della mobilità del robot. Il nodo ROS RosAria pubblica sul topic \texttt {/RosAria/pose} le informazioni sulla posizione e sull'orientamento del robot. I messaggi pubblicati sul topic utilizzano un sistema di coordinate mondocentrico, in cui orientamento e origine coincidono con l'orientamento e la posizione del robot al momento dell'avvio del nodo RosAria.
 	Per calcolare lo spostamento e la rotazione effettuata dal robot, basta memorizzare le informazioni pubblicate sul topic al momento dell'ultima rilevazione del punto di interesse e le informazioni "attuali" fornite da RosAria.
@@ -62,20 +62,21 @@ Per la navigazione del robot, in particolare del robot \textit{Kid}, è stato uti
 		\end{bmatrix}$
 	\end{center}
 	dove $p_s$ e $p_c$ sono  rispettivamente la posizione al momento dell'ultima rilevazione dell'oggetto di interesse e la corrente. $R_s$ è la matrice di rotazione al momento dell'ultima rilevazione del POI e $\theta$ è l'ampiezza dell'angolo di cui è ruotato il robot rispetto all'ultima rilevazione.\\
-	\newpage
-	Il punto di interesse, una volta fuori dal campo visivo del robot, viene calcolato come segue %TODO
+	Il punto di interesse, una volta fuori dal campo visivo del robot, viene calcolato come segue:
 	\begin{center}
 		$POI_c = (POI_s + t) R$
 	\end{center}
 	dove $POI_s$ è la posizione del punto di interesse al momento dell'ultima rilevazione.
-\subsection{Movimento} %TODO ??
+\subsection{Movimento}
 	Lo schema motorio è costituito da un'unica funzione \texttt{move}, che decide il movimento del robot in base alla forza complessiva esercitata dai campi di potenziale. La coordinata x della forza determina la rotazione del robot, mentre la y determina l'intensità del movimento in avanti.
 	La velocità lineare e quella angolare, data la forza $F$, sono così rispettivamente  calcolate:
 	\begin{center}
 		$v = \frac{F_y}{4}$
 	\end{center}
 	\begin{center}
-		$\omega = \frac{F_x}{2}$
+		$\omega = \frac{F_x}{3.5}$
 	\end{center}
-	In questo modo la velocità lineare massima raggiunta è di $0.25$ $m/s$ mentre quella angolare assume un valore massimo di $1.57$ $rad/s$ ($90°/s$).
+	In questo modo la velocità lineare massima raggiunta è di $0.25$ $m/s$ mentre quella angolare assume un valore massimo di $0.8976$ $rad/s$ ($51.42°/s$).
+	
+	Non sono previsti movimenti in retromarcia. Il movimento lineare e quello angolare sono ammessi nel caso in cui le forze che li governano superano una soglia minima.
 	

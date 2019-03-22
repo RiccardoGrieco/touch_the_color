@@ -1,0 +1,18 @@
+%	DETTAGLI IMPLEMENTATIVI
+
+\subsection{Role Manager}
+	La gestione dei ruoli avviene in modo dinamico: ogni volta che inizia un nuovo turno, il robot sa quale roulo dovrà ricoprire. Tale gestione è demandata interamente alla classe \texttt{RoleManager}, la quale è responsabile di:
+	\begin{itemize}
+		\item settaggio parametri;
+		\item lancio dei nodi Kid e Witch;
+		\item creazione e connessione delle socket;
+		\item gestione dei messaggi.
+	\end{itemize}
+	Al primo avvio, il sistema impone che il primo robot a ricoprire il ruolo di Witch sia quello con indirizzo IP minore rispetto a tutti gli altri. Per tutti gli altri match, il Role Manager del robot perdente lancia il nodo Witch e tutti gli altri quello Kid.
+
+\subsection{Problemi Relativi alla Sensoristica}
+	Durante la fase di test sono state individuate due principali problematiche relative alla sensoristica dei robot: una riguardante i sonar e l'altra la telecamera.
+	Per quanto riguarda i sonar, sono stati riscontrati i classici problemi di riflessione delle onde a ultrasuoni. Infatti, utilizzando uno scatolo quadrato come ostacolo, nel momento in cui il robot di muove in direzione di un suo spigolo, i sonar non riescono ad individuare l'ostacolo in quanto le onde emesse vengono riflesse altrove, non ritornando al sensore. Per quanto riguarda invece il problema del \textit{cross-talk}, è stato riscontrato ma raramente.
+	
+	Le problematiche relative alla telecamera RGB-D riguardano i valori di profondità per oggetti a distanza minore di $\simeq 0.5$ e il tempo di elaborazione dei frames. Per tali oggetti infatti la distanza calcolata dalla telecamera risulta avere valore \texttt{NaN}. Il problema è stato gestito utilizzando una stima della posizione del POI precedentemente rilevata: quando la misurazione è \texttt{NaN}, ma il POI si trova ad una distanza stimata limite, l'oggetto viene riconosciuto come "toccato".
+	Al fine di rendere il movimento del robot più fluido, si è deciso di richiamare la funzione di elaborazione dell'immagine con cadenza regolare poiché l'elevato tempo di elaborazione diminuiva la frequenza di esecuzione del loop di controllo. Ciò causava movimenti troppo lunghi che, in situazioni critiche, a condizioni di stallo.

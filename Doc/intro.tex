@@ -9,6 +9,14 @@
 	
 	\subsection{Nicchia Ecologica}
 	La nicchia ecologica permette di definire vincoli e potenzialità del sistema.
+	L'ambiente nel quale i robot operano deve presentare le seguenti caratteristiche:
+	\begin{itemize}
+		\item pavimentazione omogenea e regolare;
+		\item illuminazione forte e omogenea;
+		\item oggetti pieni, fonoriflettenti ed aventi altezza almeno pari a quella dei sonar;
+		\item strettoie aventi larghezza almeno 1m;
+		\item ambiente leggermente dinamico.
+	\end{itemize}
 	
 	Per quanto riguarda il task, abbiamo delle differenze fra nodi Witch e nodi Kid. Per i primi si tratta di un task molto semplice, esso prevede nell'ordine:
 	\begin{itemize}
@@ -18,6 +26,7 @@
 	\end{itemize}
 	Si tratta quindi, per i nodi Witch, di un task a tempo illimitato, robot-based, senza movimento e dipendente, in quanto la comunicazione della fine del gioco dipende da comunicazioni precedenti dei nodi Kid.
 	
+	\newpage
 	Per i nodi Kid, invece, il task prevede:
 	\begin{itemize}
 		\item trovare un oggetto del colore comunicatogli e raggiungerlo;
@@ -28,8 +37,6 @@
 	Per quanto riguarda i robot, si tratta di \textit{Pioneer} modello 3-DX munito di due ruote motrici fisse ed una mobile e sei (o dodici) sensori sonar. Sulla base superiore è stata installata una telecamera RGB-D (\textit{Microsoft Kinect}) la quale viene utilizzata per le funzioni di computer vision.
 	
 	Per quanto riguarda l'organizzazione dei robot, invece, abbiamo una composizione eterogenea, dalla grandezza limitata, la cui riconfigurabilità è comunicata, avente comunicazione esplicita con topologia ad albero.
-	
-	% TODO descrivere l'ambiente
 	
 \subsection{Schema dei Behaviours}
 
