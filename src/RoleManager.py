@@ -9,6 +9,9 @@ import roslib
 import select
 import time
 from std_msgs.msg import String
+from sound_play.msg import SoundRequest
+from sound_play.libsoundplay import SoundClient
+import sys
 
 
 class RoleManager:
@@ -23,6 +26,7 @@ class RoleManager:
         In ipList there's also my ip address.
         """
 
+        roslib.load_manifest('sound_play')      # for audio
         rospy.init_node("role_manager", anonymous=True)
         self.myIPAddress = rospy.get_param("/myIPAddress")
         self.ipList = rospy.get_param("/ipList")                        # list of ip (me included)
@@ -56,6 +60,8 @@ class RoleManager:
                          self.manageColorTouchedMsg,
                          self.manageEndGameMsg]
 
+        self.soundclient = SoundClient()
+
         self.config()
 
         rospy.spin()        # in loop until is killed
@@ -71,6 +77,10 @@ class RoleManager:
         noPartecipants = len(self.ipList)-1
         while self.noConnected < noPartecipants:
             time.sleep(0.1)
+
+        self.soundclient.say("color")
+        self.soundclient.say("color")
+        self.soundclient.say(color)
 
         for c in self.conn:
             c.send(msg)
@@ -93,6 +103,8 @@ class RoleManager:
         for c in self.conn:
             c.send(msg)
 
+        self.soundclient.say("Game over")
+
         self.manageEndGameMsg([nextWitchIP[0]])
 
     def tellColorTouchedBySocket(self):
@@ -103,6 +115,8 @@ class RoleManager:
         msg = "1:" + self.myIPAddress + "|"
 
         self.socketKidToWitch.sendall(msg)
+
+        self.soundclient.say("I have touched the color")
 
     def createAndStartConnection(self):
         """

@@ -146,7 +146,12 @@ class Kid:
             continue
         self.lastLoop = -0.5
         while self.inGame and not rospy.is_shutdown():
-            self.look()
+            # TODO togli
+            # self.look()
+            time.sleep(3)
+            self.colorTouched = True
+            self.inGame = True
+
             self.feelForce()
             fieldVector = self.wander()
             if self.POIFound or time.time()-self.lastPOIFound<self.MAX_TIME_ELAPSED:
