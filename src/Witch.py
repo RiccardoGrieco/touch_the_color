@@ -25,8 +25,8 @@ class Witch:
         rospy.spin()
 
     def chooseColor(self):
-        # colorIndex = randint(0, len(Colors.colorNames) - 1)
-        colorIndex = Colors.colorNames.index("LIGHT GREEN")     # TODO: temporaneo, da togliere
+        colorIndex = randint(0, len(Colors.colorNames) - 1)
+        #colorIndex = Colors.colorNames.index("LIGHT GREEN")     # TODO: temporaneo, da togliere
         return Colors.colorNames[colorIndex]
 
     def ownRoleManagerSpeaker(self, typeOfMsg, color):

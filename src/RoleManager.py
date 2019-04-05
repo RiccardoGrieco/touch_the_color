@@ -18,7 +18,7 @@ class RoleManager:
 
     PORT = 65535
     RECEIVE_SOCKET_TIMEOUT = 3
-    CONNECTION_ATTEMPT_TIMEOUT = 5
+    CONNECTION_ATTEMPT_TIMEOUT = 60
 
     def __init__(self):
         """
@@ -78,10 +78,8 @@ class RoleManager:
         while self.noConnected < noPartecipants:
             time.sleep(0.1)
 
-        self.soundclient.say("color")
-        self.soundclient.say("color")
-        self.soundclient.say(color)
-
+        self.soundclient.say("color       color          "+color)
+        
         for c in self.conn:
             c.send(msg)
 

@@ -27,7 +27,7 @@ class Kid:
     RELIABLE_DISTANCE = 5
     OBSTACLE_DISTANCE = 1
     SAFETY_DISTANCE = 0.5
-    COLOR_TOUCHED_DISTANCE = 0.55
+    COLOR_TOUCHED_DISTANCE = 0.65
     MIN_ATTRACTION_DISTANCE = 4.5
     MIN_ATTRACTION_FORCE = 0.7
 
@@ -146,12 +146,8 @@ class Kid:
             continue
         self.lastLoop = -0.5
         while self.inGame and not rospy.is_shutdown():
-            # TODO togli
-            # self.look()
-            time.sleep(3)
-            self.colorTouched = True
-            self.inGame = True
-
+            self.look()
+            
             self.feelForce()
             fieldVector = self.wander()
             if self.POIFound or time.time()-self.lastPOIFound<self.MAX_TIME_ELAPSED:
